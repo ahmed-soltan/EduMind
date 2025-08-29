@@ -1,7 +1,26 @@
-import type { NextConfig } from "next";
+// next.config.js
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+        pathname: "/lrigu76hy/**",
+      },
+    ],
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
 };
 
-export default nextConfig;
+// ✅ merge analyzer + config
+module.exports = withBundleAnalyzer(nextConfig);
+
+

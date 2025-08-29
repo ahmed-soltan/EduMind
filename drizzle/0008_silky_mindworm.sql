@@ -1,0 +1,21 @@
+ALTER TABLE "notes" ADD COLUMN "pinned" boolean DEFAULT false;--> statement-breakpoint
+CREATE INDEX "assistant_messages_session_id_idx" ON "assistant_messages" USING btree ("session_id");--> statement-breakpoint
+CREATE INDEX "assistant_sessions_user_id_idx" ON "assistant_sessions" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "assistant_sessions_document_id_idx" ON "assistant_sessions" USING btree ("document_id");--> statement-breakpoint
+CREATE INDEX "answers_attempt_id_idx" ON "attempts_answers" USING btree ("attempt_id");--> statement-breakpoint
+CREATE INDEX "answers_question_id_idx" ON "attempts_answers" USING btree ("question_id");--> statement-breakpoint
+CREATE INDEX "deck_user_id_idx" ON "deck" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "deck_course_id_idx" ON "deck" USING btree ("course_id");--> statement-breakpoint
+CREATE INDEX "documents_user_id_idx" ON "documents" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "flashcards_user_id_idx" ON "flashcards" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "flashcards_deck_id_idx" ON "flashcards" USING btree ("deck_id");--> statement-breakpoint
+CREATE INDEX "progress_user_id_idx" ON "progress_tracking" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "attempts_quiz_id_idx" ON "quiz_attempts" USING btree ("quiz_id");--> statement-breakpoint
+CREATE INDEX "attempts_user_id_idx" ON "quiz_attempts" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "questions_quiz_id_idx" ON "quiz_questions" USING btree ("quiz_id");--> statement-breakpoint
+CREATE INDEX "quizzes_user_id_idx" ON "quizzes" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "settings_user_id_idx" ON "settings" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "settings_subdomain_idx" ON "settings" USING btree ("subdomain");--> statement-breakpoint
+CREATE INDEX "subscription_user_id_idx" ON "subscriptions" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "name_idx" ON "users" USING btree ("first_name","last_name");--> statement-breakpoint
+CREATE UNIQUE INDEX "email_idx" ON "users" USING btree ("email");
