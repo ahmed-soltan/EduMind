@@ -3,11 +3,19 @@ import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { User } from "@/db/types";
 
-export type Session = {
-  isAuthenticated: boolean;
-  user: any | null;
-  refreshed?: boolean;
-};
+type UserSession = User & { subdomain: string };
+
+export type Session =
+  | {
+      isAuthenticated: true;
+      user: UserSession;
+      refreshed?: boolean;
+    }
+  | {
+      isAuthenticated: false;
+      user: null;
+      refreshed?: boolean;
+    };
 
 const ACCESS_SECRET = new TextEncoder().encode(process.env.ACCESS_SECRET!);
 
@@ -20,7 +28,10 @@ export async function getUserSession(): Promise<Session> {
   try {
     const { payload } = await jwtVerify(accessToken, ACCESS_SECRET);
 
-    return { isAuthenticated: true, user: (payload as any).user as User };
+    return {
+      isAuthenticated: true,
+      user: (payload as any).user as UserSession,
+    };
   } catch {
     // expired or invalid — middleware should try refresh & set cookie
     return { isAuthenticated: false, user: null };

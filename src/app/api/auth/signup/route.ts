@@ -65,7 +65,14 @@ export const POST = async (req: NextRequest) => {
   const refreshSecret = new TextEncoder().encode(process.env.REFRESH_SECRET!);
 
   const accessToken = await new SignJWT({
-    user: { id: user.id, email: user.email, subdomain: userSettings.subdomain },
+    user: {
+      id: user.id,
+      email: user.email,
+      subdomain: userSettings.subdomain,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+    },
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -73,7 +80,14 @@ export const POST = async (req: NextRequest) => {
     .sign(accessSecret);
 
   const refreshToken = await new SignJWT({
-    user: { id: user.id, email: user.email, subdomain: userSettings.subdomain },
+    user: {
+      id: user.id,
+      email: user.email,
+      subdomain: userSettings.subdomain,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+    },
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

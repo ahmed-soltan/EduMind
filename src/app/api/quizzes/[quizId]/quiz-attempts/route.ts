@@ -20,7 +20,7 @@ export const POST = async (
 
   const { quizId } = await params;
   const body: { answers: IncomingAnswer[] } = await req.json();
-  // 1️⃣ Fetch quiz questions
+
   const questions = await db
     .select()
     .from(quizQuestions)
@@ -106,6 +106,8 @@ export const GET = async (
     .select()
     .from(attemptsAnswers)
     .where(eq(attemptsAnswers.attemptId, attempt.id));
+
+    console.log({attempt, attemptAnswers})
 
 
   return NextResponse.json({ attempt, attemptAnswers }, { status: 200 });

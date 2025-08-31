@@ -15,7 +15,7 @@ const QuizResultPage = async ({ params }: { params: Promise<{ quizId: string }> 
     getUserSession(),
     getUserSubdomain(),
     fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/users/quizzes/${quizId}/quiz-attempts`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/${quizId}/quiz-attempts`,
       {
         headers: {
           Cookie: cookieStore.toString(),
@@ -26,7 +26,7 @@ const QuizResultPage = async ({ params }: { params: Promise<{ quizId: string }> 
   ]);
 
   if (!session.isAuthenticated || !subdomain) {
-    redirect(`/auth/login?callback=/quiz-interface/${quizId}`);
+    redirect(`/auth/login`);
   }
 
   const { attempt } = await response.json();

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 import { SignJWT } from "jose";
-import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+
 import { db } from "@/db/conn";
 import { settings, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
 
 export const POST = async (req: NextRequest) => {
   const { email, password } = await req.json();
@@ -23,13 +23,31 @@ export const POST = async (req: NextRequest) => {
   const accessSecret = new TextEncoder().encode(process.env.ACCESS_SECRET!);
   const refreshSecret = new TextEncoder().encode(process.env.REFRESH_SECRET!);
 
-  const accessToken = await new SignJWT({ user: { id: user.id, email: user.email, subdomain: userSettings.subdomain } })
+  const accessToken = await new SignJWT({
+    user: {
+      id: user.id,
+      email: user.email,
+      subdomain: userSettings.subdomain,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+    },
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("15m")
     .sign(accessSecret);
 
-  const refreshToken = await new SignJWT({ user: { id: user.id, email: user.email, subdomain: userSettings.subdomain } })
+  const refreshToken = await new SignJWT({
+    user: {
+      id: user.id,
+      email: user.email,
+      subdomain: userSettings.subdomain,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+    },
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")

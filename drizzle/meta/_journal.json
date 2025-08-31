@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756108020690,
-      "tag": "0000_workable_starfox",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756109079446,
-      "tag": "0001_overrated_vermin",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1756197402813,
-      "tag": "0002_gorgeous_malcolm_colcord",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756279379892,
-      "tag": "0003_groovy_gladiator",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1756279538850,
-      "tag": "0004_soft_the_phantom",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1756279633024,
-      "tag": "0005_cute_cargill",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1756280592414,
-      "tag": "0006_wooden_adam_destine",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1756379032262,
-      "tag": "0007_overconfident_genesis",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1756458129950,
-      "tag": "0008_silky_mindworm",
+      "when": 1756638307882,
+      "tag": "0000_broad_the_enforcers",
       "breakpoints": true
     }
   ]

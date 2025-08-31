@@ -29,14 +29,14 @@ const QuizInterfacePage = async ({
   const cookieStore = await cookies();
 
   const [quiz, quizAttempt] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/quizzes/${quizId}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/${quizId}`, {
       headers: {
         Cookie: cookieStore.toString(),
       },
     cache: "force-cache" 
     }).then((res) => res.json()),
     fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/users/quizzes/${quizId}/quiz-attempts`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/${quizId}/quiz-attempts`,
       {
         headers: {
           Cookie: cookieStore.toString(),

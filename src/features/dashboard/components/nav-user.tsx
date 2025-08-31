@@ -37,7 +37,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const avatarFallback = user.firstName.split(" ")[0].toUpperCase().concat(user.lastName.split(" ")[0].toUpperCase());
+  const avatarFallback = user.firstName.split("")[0].toUpperCase().concat(user.lastName.split("")[0].toUpperCase());
 
   return (
     <SidebarMenu>

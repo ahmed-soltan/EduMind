@@ -93,7 +93,7 @@ export function SectionCards() {
                 "font-semibold"
               )}
             >
-              {quizzes.averageScore}%
+              {quizzes.averageScore.toFixed(2)}%
             </span>{" "}
             {quizzes.averageScore < 50 ? (
               <IconTrendingDown className="size-4" />

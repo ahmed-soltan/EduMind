@@ -29,7 +29,7 @@ export const DocumentsSidebar = () => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild className="absolute bottom-5 left-5">
-        <Button variant="outline" size={"icon"} className="max-w-[50px] z-50">
+        <Button variant="secondary" size={"icon"} className="max-w-[50px] z-50">
           <Menu className="size-6" />
         </Button>
       </SheetTrigger>
@@ -38,8 +38,8 @@ export const DocumentsSidebar = () => {
         data-slot="sidebar"
         data-mobile="true"
         overlayClassNames={"inset-x-[15%] z-0 w-full"}
-        className="text-sidebar-foreground [&>button]:hidden z-0 p-4 space-y-2 h-full fixed 
-        md:left-72 left-0 top-16 w-max-sm sm:w-full"
+        className="text-sidebar-foreground [&>button]:hidden z-[2] p-4 space-y-2 h-full fixed 
+        md:left-72 left-0 top-13 w-max-sm sm:w-full"
         style={
           {
             "--sidebar-width": SIDEBAR_WIDTH_MOBILE,

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "edumind-470610",
+  "private_key_id": "2dbc7d44a43f2e42cc0234c2504851327b7a032f",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCdIJjKsGXpvvB5\nWmQE7QGDvrgjR+JL95kvYsnFyHtAMWuPjOx5FY2P/wWCgTlV1zSvKbJoc9tsLfW/\nsE1HnYZLaUwRvHN37X7vpS4dDk5RHpHMHhwcEzsWrp73WtWoKG2Zv4CSMOpcYGYT\n0shHEsMg5p6k3oEL2G9pHdcux/XPKzD1mwidz5Szvk+0GLZnyjshqRpCxXRyb9uV\no9r9W4rkrlCn7yR/b4jglrzc/W4v62HlvAg3f9A0lRGVRZrGuWNe2ONLtoICJcBS\n7+0HPp8palX0kpOonrcuGOhN5u2mI/RnlnDEJTq3dwcVdMVHNoX8D/ZQ0N6COBy0\nGMjj+/cBAgMBAAECggEAAf5meeyZlR5LX7Ao2egmT1qQQcBZK9TD4JZMuvdThbRq\n1JA5oEKzVbsAbKVrnxN4k2rAcl4FUCmCzLB1wT12NVxBbxiDUD0Bpz74Z2glpcFb\ny77WZU54KY5EgvJ9M2GfRxFnQKj2vFPWemoVCP6BCS3r9ZRuMkKIOAmnz+vmdP8R\nTGVN8mSeqmXk7QtqkZmjItiGr+FE3DcJa3Zk18eJoamFdNi2UrMV+KzRuX4N0iqC\newLzWdifx+QJ6IswcyjOBcVdxCgvjhT2unwxjvFww6dbxQh8qdCitdB0OXEx+VXN\n1IGTUeD96kWB2cbrK4IPxiAxTB5Ykm5Lf6T2kRIurQKBgQDIk8oPuuMB6HJR4Wji\nJ8ehL2/X9yYZ+BwwRxhyNIJkA23Z1oUE60hLhwgORfAtODKQilqY3l4IP3USzSjR\nFGgj3WIYzMKK3I8dnRbHCfzjxU11KvIQ0L1UGOfatmO7jAeaBNSmM0EW8l/RPiBX\nQINbz8UfzenPjfrDODQe0+q0hQKBgQDIi0rm+HPuS8dWlB1CYIb0M6R01jfeZR38\nRUog+jEYWX7roph6oDaHLaascRnUkElOfXHLC97CfRhCH5Z3V8iPPYP3NBWISn+h\nkld0ZZDWBDTcxIUT84Ut5F+AF2VpZwMv4moBh9eOR9jBvy790CPGgFhAwDj2wRNT\nFtQnuwZvTQKBgBZkCSaAYl8QJ9LkKuU0M6DWvtGJEYPMorjw9tWo7vVjPJwYynim\nG0fzJv8Q56LkpyBjkYGHMVASZWtX47qTYJzAVfcWxJDj1kYkByro/oYevGrcBHHE\nG56LuTY9Lhz9oMucxnBXQGjjXbbqDIow9XkGVKccQYGeA+RPHeJjHcxRAoGAJ++t\nQ9+4Xn0SvkgSp5RHa7wZBPdf+tbSKNm3kGeifUHdR5mCmfDryvGpXm/LgAwXvRy4\nG4JKoxp8STa3JR8DHptWe1UQ8Ko9TnSxG8naFPSTfl9YTQfSvrfa2MxP8rSD6vZA\nu/tMTtY58SNcfUkExtPqP0LIVUNP0N0b9KmG94UCgYBX8S2TgemxdpWo7U80U2+H\nBS7cM3O4HmJpNeKzgIDkiGDi5JOG+3ZkcociDs4CoWsdNhFwJMhtRl9BmL0cdCw1\n/Bfh3hU1wdPO2MuHO/6KCEn6IsG17EVcEQJZJo8/IhuVOZC/xrC4+di91+9/2iPB\nBJNqsanONVtcpMpMATynRQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "vertix-api@edumind-470610.iam.gserviceaccount.com",
+  "client_id": "102534451473598062811",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vertix-api%40edumind-470610.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

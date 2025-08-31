@@ -31,7 +31,7 @@ export default function AIAssistantLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-5 relative h-full py-3" id="ai-assistant">
+    <div className="flex flex-col gap-5 relative h-full py-3 lg:p-0" id="ai-assistant">
       <DocumentsSidebar />
 
       {/* Mobile Tabs */}

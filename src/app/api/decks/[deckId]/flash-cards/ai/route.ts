@@ -20,8 +20,6 @@ export const POST = async (
   const { deckId } = await params;
   const { numFlashCards } = await req.json();
 
-  console.log(numFlashCards);
-
   const [deckData] = await db
     .select({
       title: deck.title,
@@ -35,8 +33,6 @@ export const POST = async (
     model: "gemini-2.0-flash",
     temperature: 0.7,
   });
-
-  console.log(deckData);
 
   const flashcardPrompt = new PromptTemplate({
     template: `

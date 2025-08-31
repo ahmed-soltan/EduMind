@@ -1,10 +1,12 @@
 "use client";
 
-import { Send, Bot, User } from "lucide-react";
+import { Bot, Loader2, User } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { ChatInput } from "./chat-input";
+
+import { useDocumentId } from "../hooks/use-document-id";
+import { useGetChatMessage } from "../api/use-get-chat-message";
 
 export const ChatWidget = () => {
   const [inputValue, setInputValue] = useState("");
@@ -12,17 +14,24 @@ export const ChatWidget = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [messages, setMessages] = useState<any[]>([]);
-  const [documentReady, setDocumentReady] = useState(false);
+  const { data, isLoading } = useGetChatMessage();
+  const documentId = useDocumentId();
+
+  useEffect(() => {
+    if (data) {
+      // Normalize API data into your frontend message format
+      const mappedMessages = data.map((msg: any) => ({
+        id: msg.id,
+        content: msg.message,
+        type: msg.role, // fallback if API doesn’t return type
+        timestamp: new Date(msg.createdAt),
+      }));
+      setMessages(mappedMessages);
+    }
+  }, [data]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const onSendMessage = (message: string) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { id: Date.now(), content: message, type: "user" },
-    ]);
   };
 
   useEffect(() => {
@@ -39,24 +48,6 @@ export const ChatWidget = () => {
     }
   }, [inputValue]);
 
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      onSendMessage(inputValue.trim());
-      setInputValue("");
-      setIsTyping(true);
-
-      // Simulate typing indicator
-      setTimeout(() => setIsTyping(false), 2000);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
@@ -67,15 +58,19 @@ export const ChatWidget = () => {
       <div className="border-b border-border p-4 bg-card">
         <h2 className="text-lg font-semibold">AI Assistant</h2>
         <p className="text-sm text-muted-foreground">
-          {documentReady
+          {documentId
             ? "Ask questions about your uploaded documents"
             : "Upload documents to start chatting"}
         </p>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 h-full max-h-[810px]">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <Bot className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -83,7 +78,7 @@ export const ChatWidget = () => {
                 Welcome to Document Assistant
               </p>
               <p className="text-muted-foreground">
-                {documentReady
+                {documentId
                   ? "Start by asking a question about your documents"
                   : "Upload some documents to begin"}
               </p>
@@ -164,35 +159,13 @@ export const ChatWidget = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-border p-4 bg-card">
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
-            <Textarea
-              ref={textareaRef}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={
-                documentReady
-                  ? "Ask a question about your documents..."
-                  : "Upload documents first to start chatting"
-              }
-              disabled={!documentReady}
-              className="min-h-[44px] max-h-[120px] resize-none"
-              rows={1}
-            />
-          </div>
-          <Button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || !documentReady}
-            size="sm"
-            className="h-11 px-3"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <ChatInput
+        inputValue={inputValue}
+        setMessages={setMessages}
+        textareaRef={textareaRef}
+        setIsTyping={setIsTyping}
+        setInputValue={setInputValue}
+      />
     </div>
   );
 };

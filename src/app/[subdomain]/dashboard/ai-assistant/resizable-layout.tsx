@@ -18,8 +18,8 @@ const ResizableLayout = ({ children }: { children: React.ReactNode }) => {
         direction="horizontal"
         className="min-h-[200px] w-full rounded-lg"
       >
-        <ResizablePanel defaultSize={50}>
-          <div className="hidden lg:flex h-full items-center justify-center p-6 w-full">
+        <ResizablePanel defaultSize={50} minSize={50}>
+          <div className="hidden lg:flex h-full items-start justify-start w-full">
             {children}
           </div>
         </ResizablePanel>

@@ -12,6 +12,7 @@ import {
   doublePrecision,
   index,
   uniqueIndex,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const billingCycle = pgEnum("billing_cycle", ["monthly", "yearly"]);
@@ -128,36 +129,33 @@ export const documents = pgTable(
   (table) => [index("documents_user_id_idx").on(table.userId)]
 );
 
-// ---------------- AI Assistant ----------------
-export const assistantSessions = pgTable(
-  "assistant_sessions",
-  {
-    id: uuid().primaryKey(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    documentId: uuid("document_id").references(() => documents.id),
-    title: varchar("title", { length: 255 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [
-    index("assistant_sessions_user_id_idx").on(table.userId),
-    index("assistant_sessions_document_id_idx").on(table.documentId),
-  ]
-);
+export const chunks = pgTable("chunks", {
+  id: uuid().primaryKey(),
+  documentId: uuid("document_id")
+    .notNull()
+    .references(() => documents.id),
+  content: text("content").notNull(),
+  embedding: vector("embedding", { dimensions: 768 }), // matches Gemini embeddings
+});
 
 export const assistantMessages = pgTable(
   "assistant_messages",
   {
     id: uuid().primaryKey(),
-    sessionId: uuid("session_id")
+    documentId: uuid("document_id")
       .notNull()
-      .references(() => assistantSessions.id, { onDelete: "cascade" }),
+      .references(() => documents.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     role: varchar("role", { length: 20 }).notNull(), // user | assistant
     message: text("message").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("assistant_messages_session_id_idx").on(table.sessionId)]
+  (table) => [
+    index("assistant_messages_document_id_idx").on(table.documentId),
+    index("assistant_messages_user_id_idx").on(table.userId),
+  ]
 );
 
 // ---------------- Quizzes ----------------
@@ -334,7 +332,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [subscriptions.userId],
   }),
   documents: many(documents),
-  assistantSessions: many(assistantSessions),
+  assistantMessages: many(assistantMessages),
   quizzes: many(quizzes),
   flashcards: many(flashcards),
   progress: one(progressTracking, {

@@ -1,1 +1,0 @@
-ALTER TABLE "quizzes" ADD COLUMN "is_public" boolean DEFAULT true;
