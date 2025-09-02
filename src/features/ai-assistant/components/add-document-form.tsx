@@ -48,7 +48,7 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
     };
 
     const documentId = await mutateAsync(payload);
-    router.push(`${pathname}/${documentId}`);
+    router.replace(`${pathname}/${documentId}`);
     onCancel?.();
   };
 
@@ -64,7 +64,6 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
         <UploadDropzone
           endpoint="pdfUploader"
           onClientUploadComplete={async (res) => {
-            // UploadThing returns an array; pick first item
             const uploaded = res?.[0];
             if (!uploaded) {
               alert("Upload failed or returned no file metadata.");
@@ -77,45 +76,17 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
               title: uploaded.name ?? uploaded.key ?? "untitled",
               size: uploaded.size ?? 0,
               type: uploaded.type ?? "application/pdf",
-              url: uploaded.ufsUrl ?? uploaded.url  ?? "",
+              url: uploaded.ufsUrl ?? uploaded.url ?? "",
             };
 
             setValue(meta);
 
-            // try to fetch the uploaded file (browser). Might fail due to CORS or signed/private urls
-            try {
-              const resp = await fetch(meta.url);
-              if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
-              const ab = await resp.arrayBuffer();
+            const resp = await fetch(meta.url);
+            if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
+            const ab = await resp.arrayBuffer();
 
-              // quick sanity check on magic bytes (optional)
-              const magic = new Uint8Array(ab).slice(0, 8);
-              // if PDF it usually starts with '%PDF'
-              // console.log("magic bytes:", new TextDecoder().decode(magic));
-
-              const text = await extractPdfTextFromArrayBuffer(ab);
-              setExtractedText(text);
-            } catch (err) {
-              // fallback: call server proxy that fetches and extracts
-              console.warn("Client fetch/extract failed, calling server proxy:", err);
-              try {
-                const proxyRes = await fetch("/api/extract-proxy", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ url: meta.url }),
-                });
-                const json = await proxyRes.json();
-                if (!proxyRes.ok) {
-                  console.warn("Proxy failed:", json);
-                  setExtractedText(null);
-                } else {
-                  setExtractedText(json.text ?? "");
-                }
-              } catch (e2) {
-                console.error("Server proxy failed:", e2);
-                setExtractedText(null);
-              }
-            }
+            const text = await extractPdfTextFromArrayBuffer(ab);
+            setExtractedText(text);
           }}
           onUploadError={(error: Error) => {
             alert(`ERROR! ${error.message}`);
@@ -139,7 +110,10 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
         </div>
 
         <CardFooter className="flex justify-end p-0">
-          <Button disabled={!value || isPending || !extractedText} onClick={handleAddDocument}>
+          <Button
+            disabled={!value || isPending || !extractedText}
+            onClick={handleAddDocument}
+          >
             {isPending && <Loader2 className="animate-spin size-4" />}
             Add Document
           </Button>

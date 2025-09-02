@@ -1,5 +1,5 @@
 import { db } from "@/db/conn";
-import { deck, flashcards } from "@/db/schema";
+import { deck, flashcards, userActivities } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
 import { and, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -26,6 +26,15 @@ export const PATCH = async (
     })
     .where(and(eq(deck.id, deckId), eq(deck.userId, session.user.id)))
     .returning({ deckId: deck.id });
+
+  await db.insert(userActivities).values({
+    id: crypto.randomUUID(),
+    userId: session.user.id,
+    activityType: "flashcards",
+    activityDate: new Date(),
+    activityTitle: `Update Deck: ${body.title}`,
+    activityDescription: `You updated the deck with title: ${body.title}`,
+  });
 
   return NextResponse.json({ deckId: res.deckId }, { status: 200 });
 };

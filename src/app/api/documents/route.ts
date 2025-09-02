@@ -1,7 +1,7 @@
 // app/api/documents/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/conn";
-import { chunks, documents } from "@/db/schema";
+import { chunks, documents, userActivities } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
@@ -82,6 +82,15 @@ export const POST = async (req: NextRequest) => {
       });
     }
   }
+
+  await db.insert(userActivities).values({
+    id: crypto.randomUUID(),
+    userId: session.user.id,
+    activityType: "documents",
+    activityDate: new Date(),
+    activityTitle: `Upload Document: ${title}`,
+    activityDescription: `You uploaded a new document: ${title} of type ${type}`,
+  });
 
   return NextResponse.json({ documentId: newDocument.id });
 };

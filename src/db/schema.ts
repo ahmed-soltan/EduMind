@@ -13,6 +13,7 @@ import {
   index,
   uniqueIndex,
   vector,
+  date,
 } from "drizzle-orm/pg-core";
 
 export const billingCycle = pgEnum("billing_cycle", ["monthly", "yearly"]);
@@ -317,6 +318,56 @@ export const progressTracking = pgTable(
   (table) => [index("progress_user_id_idx").on(table.userId)]
 );
 
+export const studyDays = pgTable(
+  "study_days",
+  {
+    id: uuid().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    activityDate: date("activity_date").notNull(), // Local date for the user
+    firstEventAt: timestamp("first_event_at").notNull().defaultNow(), // UTC timestamp
+    // quiz | flashcards | both (you can keep varchar+checks or create a PG enum)
+    source: varchar("source", { length: 20 }).notNull(),
+  },
+  (t) => [
+    uniqueIndex("study_days_user_date_uniq").on(t.userId, t.activityDate),
+    index("study_days_user_idx").on(t.userId),
+    index("study_days_date_idx").on(t.activityDate),
+  ]
+);
+
+
+export const streaks = pgTable(
+  "streaks",
+  {
+    userId: uuid("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    current: integer("current").notNull().default(0),
+    longest: integer("longest").notNull().default(0),
+    // Local calendar date in user's timezone for last day with activity:
+    lastActiveDate: date("last_active_date"),
+    // IANA timezone used to interpret the user's day boundary (e.g., "Africa/Cairo")
+    tz: varchar("tz", { length: 64 }).notNull().default("UTC"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  }
+);
+
+export const userActivities = pgTable("user_activities", {
+  id: uuid().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  activityTitle: varchar("activity_title", { length: 255 }).notNull(),
+  activityDescription: text("activity_description").notNull(),
+  activityType: varchar("activity_type", { length: 50 }).notNull(),
+  activityDate: timestamp("activity_date").defaultNow().notNull(),
+}, (table) => [
+  index("user_activities_user_id_idx").on(table.userId),
+]);
+
 // ---------------- Relations ----------------
 export const usersRelations = relations(users, ({ one, many }) => ({
   settings: one(settings, {
@@ -341,6 +392,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   courses: many(courses),
   notes: many(notes),
+  userActivities: many(userActivities),
 }));
 
 export const planRelations = relations(plans, ({ many }) => ({

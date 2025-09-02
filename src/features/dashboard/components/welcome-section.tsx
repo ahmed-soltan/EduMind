@@ -11,7 +11,7 @@ export const WelcomeSection = async () => {
   const user = session.user;
   return (
     <div className="p-6 ">
-      <h1 className="text-3xl font-medium flex items-center gap-1">
+      <h1 className="text-3xl font-medium inline">
         Welcome back, <span className="font-bold">{user?.firstName}</span>👋
       </h1>
       <p className="text-neutral-500">

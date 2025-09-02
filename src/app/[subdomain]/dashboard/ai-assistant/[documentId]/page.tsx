@@ -1,29 +1,17 @@
+"use client";
 
-import { cookies } from "next/headers";
-import React from "react";
-import PdfViewerClient from "./pdf-viewer-client";
+import dynamic from "next/dynamic";
 
-const DocumentIdPage = async ({
-  params,
-}: {
-  params: Promise<{ documentId: string }>;
-}) => {
-  const { documentId } = await params;
-  const cookieStore = await cookies();
+import { useGetDocument } from "@/features/ai-assistant/api/use-get-document";
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/documents/${documentId}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieStore.toString(),
-      },
-    }
-  );
-  const data = await res.json();
+const PdfViewerClient = dynamic(() => import("./pdf-viewer-client"), {
+  ssr: false,
+});
 
-  if (!data) return null;
+const DocumentIdPage = () => {
+  const { data, isLoading } = useGetDocument();
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="w-full">

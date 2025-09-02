@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getUserSession } from "@/utils/get-user-session";
-import { db } from "@/db/conn";
-import { assistantMessages } from "@/db/schema";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import crypto from "crypto";
-import { searchChunks } from "@/features/ai-assistant/utils/search-chunks";
 import { desc, eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+
+import { db } from "@/db/conn";
+import { assistantMessages, userActivities } from "@/db/schema";
+import { getUserSession } from "@/utils/get-user-session";
+import { searchChunks } from "@/features/ai-assistant/utils/search-chunks";
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "text-embedding-004",
@@ -90,6 +91,15 @@ export const POST = async (req: NextRequest) => {
     userId: session.user.id,
     role: "assistant",
     message: aiMessage,
+  });
+
+  await db.insert(userActivities).values({
+    id: crypto.randomUUID(),
+    userId: session.user.id,
+    activityType: "documents",
+    activityDate: new Date(),
+    activityTitle: `A Chat Message Sent`,
+    activityDescription: `You sent a chat message: ${message}`,
   });
 
   return NextResponse.json({ documentId, reply: aiMessage });

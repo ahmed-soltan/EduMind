@@ -2,9 +2,15 @@ import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
-import { attemptsAnswers, quizAttempts, quizQuestions } from "@/db/schema";
+import {
+  attemptsAnswers,
+  quizAttempts,
+  quizQuestions,
+  userActivities,
+} from "@/db/schema";
 
 import { getUserSession } from "@/utils/get-user-session";
+import { recordStudyEvent } from "@/utils/streak-helper";
 
 type IncomingAnswer = { questionId: string; answer: string };
 
@@ -44,16 +50,14 @@ export const POST = async (
 
   const scorePercentage = (correctCount / questions.length) * 100;
 
-  // 4️⃣ Create attempt first
   const attemptId = crypto.randomUUID();
+
   await db.insert(quizAttempts).values({
     id: attemptId,
     userId: session.user.id,
-    quizId,
     score: scorePercentage,
+    quizId,
   });
-
-  // 5️⃣ Insert answers with attemptId
   await db.insert(attemptsAnswers).values(
     gradedAnswers.map((a) => ({
       id: crypto.randomUUID(),
@@ -62,7 +66,22 @@ export const POST = async (
       answer: a.answer,
       isCorrect: a.isCorrect,
     }))
-  );
+  ),
+  await Promise.all([
+    await db.insert(userActivities).values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      activityType: "quizzes",
+      activityDate: new Date(),
+      activityTitle: `Quiz Attempt: ${quizId}`,
+      activityDescription: `You attempted the quiz: ${quizId}`,
+    }),
+    await recordStudyEvent({
+      userId: session.user.id,
+      source: "quiz",
+      occurredAtUtc: new Date(),
+    })
+  ]);
 
   return NextResponse.json(
     { message: "Quiz attempt submitted", score: scorePercentage },
@@ -92,23 +111,20 @@ export const GET = async (
       )
     );
 
-    if (!attempt) {
-      return NextResponse.json(
-        {
-          attempt: null,
-          attemptAnswers: [],
-        },
-        { status: 404 }
-      );
-    }
+  if (!attempt) {
+    return NextResponse.json(
+      {
+        attempt: null,
+        attemptAnswers: [],
+      },
+      { status: 404 }
+    );
+  }
 
   const attemptAnswers = await db
     .select()
     .from(attemptsAnswers)
     .where(eq(attemptsAnswers.attemptId, attempt.id));
-
-    console.log({attempt, attemptAnswers})
-
 
   return NextResponse.json({ attempt, attemptAnswers }, { status: 200 });
 };

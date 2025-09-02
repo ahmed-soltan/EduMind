@@ -1,4 +1,4 @@
-import { attemptsAnswers, deck, flashcards, quizAttempts, quizQuestions } from "@/db/schema";
+import { attemptsAnswers, deck, flashcards, quizAttempts, quizQuestions, userActivities } from "@/db/schema";
 import { InferSelectModel } from "drizzle-orm";
 import { documents, quizzes, users } from "./schema";
 
@@ -10,6 +10,7 @@ export type QuizQuestions = InferSelectModel<typeof quizQuestions>; // full row 
 export type AttemptAnswers = InferSelectModel<typeof attemptsAnswers>;
 export type Deck = InferSelectModel<typeof deck>;
 export type FlashCard = InferSelectModel<typeof flashcards>;
+export type UserActivity = InferSelectModel<typeof userActivities>;
 
 export type QuizData = {
   quiz: Quiz;

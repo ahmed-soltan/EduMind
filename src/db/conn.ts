@@ -1,10 +1,19 @@
 import "dotenv/config";
 
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/node-postgres";
+import * as schema from "./schema";
 
-const sql = neon(process.env.DATABASE_URL!); // client
-export const db = drizzle(sql);
+declare global {
+  // avoid creating a new pool every hot reload in dev
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  var __PG_POOL__: any;
+}
+
+const pool = global.__PG_POOL__ ?? new Pool({ connectionString: process.env.DATABASE_URL! });
+if (!global.__PG_POOL__) global.__PG_POOL__ = pool;
+
+export const db = drizzle(pool, { schema });
 
 
 import { Redis } from '@upstash/redis'

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
-import { deck, flashcards } from "@/db/schema";
+import { deck, flashcards, userActivities } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
 import { eq, sql } from "drizzle-orm";
 
@@ -23,6 +23,14 @@ export const POST = async (req: NextRequest) => {
       description: body.description,
     })
     .returning({ deckId: deck.id });
+    await db.insert(userActivities).values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      activityType: "flashcards",
+      activityDate: new Date(),
+      activityTitle: `Create New Deck: ${body.title}`,
+      activityDescription: `You created a new deck with title: ${body.title}`,
+    });
 
   return NextResponse.json({ deckId: res.deckId }, { status: 201 });
 };

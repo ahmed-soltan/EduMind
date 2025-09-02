@@ -38,17 +38,6 @@ export async function searchChunks(
       console.warn(
         `[searchChunks] no rows matched document_id::text = ${docIdTrimmed}`
       );
-
-      // Extra debug: list some distinct document_id values to compare formats
-      try {
-        const sampleDocIds = await db.execute(
-          sql`SELECT DISTINCT document_id::text AS doc FROM chunks LIMIT 20;`
-        );
-      } catch (e) {
-        console.warn("[searchChunks] failed to list distinct document_id values:", e);
-      }
-
-      // fall through to return empty (or fallback later)
     } else {
       console.log(
         "[searchChunks] found sample row for documentId:",

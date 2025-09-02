@@ -23,7 +23,6 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Image uploaded:", file.ufsUrl);
       return { uploadedBy: metadata.userId, fileType: "image" };
     }),
 
@@ -37,7 +36,6 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("PDF uploaded:", file.ufsUrl);
       return { uploadedBy: metadata.userId, fileType: "pdf" };
     }),
 
@@ -58,16 +56,16 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Word doc uploaded:", file.ufsUrl);
       return { uploadedBy: metadata.userId, fileType: "word" };
     }),
 
   // PowerPoint uploader
   pptUploader: f({
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
-      maxFileSize: "8MB",
-      maxFileCount: 1,
-    },
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+      {
+        maxFileSize: "8MB",
+        maxFileCount: 1,
+      },
     "application/vnd.ms-powerpoint": {
       maxFileSize: "8MB",
       maxFileCount: 1,
@@ -79,7 +77,6 @@ export const ourFileRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("PowerPoint uploaded:", file.ufsUrl);
       return { uploadedBy: metadata.userId, fileType: "ppt" };
     }),
 } satisfies FileRouter;

@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
-import { flashcards } from "@/db/schema";
+import { flashcards, userActivities } from "@/db/schema";
 
 import { getUserSession } from "@/utils/get-user-session";
 
@@ -58,13 +58,26 @@ export const PATCH = async (
 
   const body = await req.json();
 
-  await db
-    .update(flashcards)
-    .set({
-      front: body.front,
-      back: body.back,
-    })
-    .where(and(eq(flashcards.id, flashcardId), eq(flashcards.deckId, deckId)));
+  await Promise.all([
+    await db
+      .update(flashcards)
+      .set({
+        front: body.front,
+        back: body.back,
+      })
+      .where(
+        and(eq(flashcards.id, flashcardId), eq(flashcards.deckId, deckId))
+      ),
+
+    await db.insert(userActivities).values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      activityType: "flashcards",
+      activityDate: new Date(),
+      activityTitle: `Update Flashcard: ${body.front}`,
+      activityDescription: `You updated the flashcard with front: ${body.front}`,
+    }),
+  ]);
 
   return NextResponse.json({ message: "Flashcard updated successfully" });
 };

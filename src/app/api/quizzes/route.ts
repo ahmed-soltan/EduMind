@@ -1,5 +1,10 @@
 import { db } from "@/db/conn";
-import { quizAttempts, quizQuestions, quizzes } from "@/db/schema";
+import {
+  quizAttempts,
+  quizQuestions,
+  quizzes,
+  userActivities,
+} from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -50,20 +55,6 @@ export const POST = async (req: NextRequest) => {
   }
 
   const { topic, prompt, numQuestions, difficulty } = await req.json();
-
-  const [newQuiz] = await db
-    .insert(quizzes)
-    .values({
-      id: crypto.randomUUID(),
-      userId: session.user.id,
-      topic,
-      prompt,
-      numQuestions,
-      difficulty,
-    })
-    .returning({ id: quizzes.id });
-
-  const quizId = newQuiz.id;
 
   const model = new ChatGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY!,
@@ -131,6 +122,20 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
+  const [newQuiz] = await db
+    .insert(quizzes)
+    .values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      topic,
+      prompt,
+      numQuestions,
+      difficulty,
+    })
+    .returning({ id: quizzes.id });
+
+  const quizId = newQuiz.id;
+
   // 6. Insert quiz questions into DB
   const values = result.questions.map((q: any) => ({
     id: crypto.randomUUID(),
@@ -142,16 +147,25 @@ export const POST = async (req: NextRequest) => {
     explanation: q.explanation,
   }));
 
-  await db
-    .update(quizzes)
-    .set({
-      title: result.title,
-      description: result.description,
-      estimatedTime: result.estimationTime,
-    })
-    .where(eq(quizzes.id, quizId));
-
-  await db.insert(quizQuestions).values(values);
+  await Promise.all([
+    await db
+      .update(quizzes)
+      .set({
+        title: result.title,
+        description: result.description,
+        estimatedTime: result.estimationTime,
+      })
+      .where(eq(quizzes.id, quizId)),
+    await db.insert(quizQuestions).values(values),
+    await db.insert(userActivities).values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      activityType: "quizzes",
+      activityDate: new Date(),
+      activityTitle: `Create New Quiz on ${topic}`,
+      activityDescription: `AI generated quiz with ${numQuestions} questions on ${topic}`,
+    }),
+  ]);
 
   // 7. Return quiz with its questions
   return NextResponse.json({

@@ -1,5 +1,5 @@
 import { db } from "@/db/conn";
-import { settings, users } from "@/db/schema";
+import { settings, streaks, users } from "@/db/schema";
 import { checkAuth } from "@/utils/auth";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -45,6 +45,8 @@ export const POST = async (req: NextRequest) => {
     .update(users)
     .set({ hasOnboarded: true })
     .where(eq(users.id, userId));
+
+      await db.insert(streaks).values({ userId, tz: "UTC" });
 
   return NextResponse.json({
     message: "User onboarded successfully",

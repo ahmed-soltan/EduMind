@@ -1,0 +1,70 @@
+"use client";
+
+import Link from "next/link";
+import { Calendar } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { useGetRecentActivities } from "../api/use-get-recent-activities";
+
+export const ActivitiesSection = () => {
+  const { data: activities, isLoading } = useGetRecentActivities();
+
+  if (isLoading) return null;
+
+  return (
+    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs w-full min-h-[500px]">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Recent Activities</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-start w-full gap-3">
+            {activities && activities.length > 0 ? (
+              activities.map((activity) => (
+                <div key={activity.id} className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4">
+                  <div className="flex flex-col items-start gap-1 w-full max-w-[550px]">
+                    <h1 className="text-md font-semibold line-clamp-1">
+                      {activity.activityTitle}
+                    </h1>
+                    <p className="text-sm text-muted-foreground line-clamp-1">
+                      {activity.activityDescription}
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Calendar className="size-4" />
+                    {new Date(activity.activityDate).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center w-full py-4">
+                <p className="text-sm text-muted-foreground">
+                  No recent activities found.
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant={"default"} className="w-full">
+            <Link href={"dashboard/activities"}>View All Activities</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSendMessage } from "../api/use-send-message";
 import { useDocumentId } from "../hooks/use-document-id";
 
@@ -24,12 +24,15 @@ export const ChatInput = ({
   const documentId = useDocumentId();
   const [documentReady, setDocumentReady] = useState(!!documentId);
 
-  const onSendMessage = (message: string) => {
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { id: Date.now(), content: message, type: "user", timestamp: new Date() },
-    ]);
-  };
+  // const onSendMessage = (message: string) => {
+  //   setMessages((prevMessages) => [
+  //     ...prevMessages,
+  //     { id: Date.now(), content: message, type: "user", timestamp: new Date() },
+  //   ]);
+  // };
+  useEffect(()=>{
+    setDocumentReady(!!documentId);
+  },[documentId])
 
   const handleSend = () => {
     if (!inputValue.trim()) return;

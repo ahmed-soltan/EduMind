@@ -1,21 +1,24 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useMemo, useState } from "react";
+import { CheckCircle, Loader2, XCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { QuizInterfaceSidebar } from "./quiz-interface-sidebar";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
+import { getInitialCounter } from "./quiz-timer";
 import { useQuiz } from "./quiz-context-provider";
+import { useQuizAttempt } from "../api/use-quiz-attempt";
 import { useQuizAnswering } from "../hooks/use-quiz-answering";
 
 import { cn } from "@/lib/utils";
 import { Attempt, QuizInterface as QuizInterfaceT } from "@/db/types";
-import { CheckCircle, Loader2, XCircle } from "lucide-react";
-import Link from "next/link";
-import { useQuizAttempt } from "../api/use-quiz-attempt";
-import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
-import { getInitialCounter } from "./quiz-timer";
+
+
 
 interface QuizInterfaceProps {
   quiz: QuizInterfaceT;
@@ -198,7 +201,7 @@ export const QuizInterface = React.memo(
               error ? (
                 <div className="flex items-center gap-5">
                   <Button asChild>
-                    <Link href={`${subdomain}/dashboard/quiz-generator`}>
+                    <Link href={`/${subdomain}/dashboard/quiz-generator`}>
                       Back To Dashboard
                     </Link>
                   </Button>

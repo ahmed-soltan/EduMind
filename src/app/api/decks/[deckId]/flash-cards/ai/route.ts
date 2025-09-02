@@ -4,8 +4,8 @@ import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 import { db } from "@/db/conn";
-import { deck, flashcards } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
+import { deck, flashcards, userActivities } from "@/db/schema";
 
 export const POST = async (
   req: NextRequest,
@@ -92,7 +92,17 @@ Return the result as a valid JSON array only, without extra text.
     createdAt: new Date(),
   }));
 
-  await db.insert(flashcards).values(values);
+  await Promise.all([
+    await db.insert(flashcards).values(values),
+    await db.insert(userActivities).values({
+      id: crypto.randomUUID(),
+      userId: session.user.id,
+      activityType: "flashcards",
+      activityDate: new Date(),
+      activityTitle: `Create Flashcards for Deck: ${deckData.title}`,
+      activityDescription: `AI generated new flashcards in deck ${deckData.title}`,
+    }),
+  ]);
 
   return NextResponse.json({ success: true });
 };
