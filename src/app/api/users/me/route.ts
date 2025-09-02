@@ -10,6 +10,7 @@ export const GET = async (req: NextRequest) => {
   if (!userSession.isAuthenticated) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+
   const [user] = await db
     .select({
       id: users.id,

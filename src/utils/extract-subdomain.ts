@@ -2,43 +2,40 @@ import { rootDomain } from "@/lib/utils";
 import { NextRequest } from "next/server";
 
 export function extractSubdomain(request: NextRequest): string | null {
-  // Prefer x-forwarded-host (proxies), then Host header, then URL hostname
-  const forwarded = request.headers.get("x-forwarded-host");
-  const hostHeader = forwarded ?? request.headers.get("host") ?? "";
-  // strip port if present
-  const hostname = (hostHeader.split(":")[0] || new URL(request.url).hostname).toLowerCase();
+  const url = request.url;
+  const host = request.headers.get('host') || '';
+  const hostname = host.split(':')[0];
 
-  // ---- Local development ----
-  // Examples: tenant.localhost, localhost, 127.0.0.1
-  if (hostname === "localhost" || hostname === "127.0.0.1") {
-    return null;
-  }
-  if (hostname.endsWith(".localhost")) {
-    // tenant.localhost -> "tenant"
-    // handle multi-level names like foo.bar.localhost -> "foo.bar"
-    return hostname.replace(/\.localhost$/, "");
-  }
+  // Local development environment
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    // Try to extract subdomain from the full URL
+    const fullUrlMatch = url.match(/http:\/\/([^.]+)\.localhost/);
+    if (fullUrlMatch && fullUrlMatch[1]) {
+      return fullUrlMatch[1];
+    }
 
-  // ---- Vercel preview domains ----
-  // tenant---branch.vercel.app -> tenant
-  if (hostname.endsWith(".vercel.app") && hostname.includes("---")) {
-    return hostname.split("---")[0];
-  }
+    // Fallback to host header approach
+    if (hostname.includes('.localhost')) {
+      return hostname.split('.')[0];
+    }
 
-  // ---- Production / normal domains ----
-  const rootDomainFormatted = rootDomain.split(":")[0].toLowerCase();
-  if (!rootDomainFormatted) return null;
-
-  // If host equals root domain or www.rootDomain => no subdomain
-  if (hostname === rootDomainFormatted || hostname === `www.${rootDomainFormatted}`) {
     return null;
   }
 
-  // If host ends with ".rootDomain", return the left-most part(s) as the subdomain
-  if (hostname.endsWith(`.${rootDomainFormatted}`)) {
-    return hostname.slice(0, -(`.${rootDomainFormatted}`).length);
+  // Production environment
+  const rootDomainFormatted = rootDomain.split(':')[0];
+
+  // Handle preview deployment URLs (tenant---branch-name.vercel.app)
+  if (hostname.includes('---') && hostname.endsWith('.vercel.app')) {
+    const parts = hostname.split('---');
+    return parts.length > 0 ? parts[0] : null;
   }
 
-  // Fallback: no subdomain detected
-  return null;
+  // Regular subdomain detection
+  const isSubdomain =
+    hostname !== rootDomainFormatted &&
+    hostname !== `www.${rootDomainFormatted}` &&
+    hostname.endsWith(`.${rootDomainFormatted}`);
+
+  return isSubdomain ? hostname.replace(`.${rootDomainFormatted}`, '') : null;
 }

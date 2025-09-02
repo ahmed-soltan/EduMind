@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtVerify, SignJWT } from "jose";
+import { rootDomain } from "@/lib/utils";
 
 export const POST = async (req: NextRequest) => {
   const cookieStore = await cookies();
@@ -32,12 +33,14 @@ export const POST = async (req: NextRequest) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      domain: `.${rootDomain}`,
       path: "/",
     });
     res.cookies.set("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+      domain: `.${rootDomain}`,
       path: "/",
     });
     return res;

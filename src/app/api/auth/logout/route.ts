@@ -1,3 +1,4 @@
+import { rootDomain } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (req: NextRequest) => {
@@ -7,6 +8,7 @@ export const POST = async (req: NextRequest) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
     path: "/",
+    domain: `.${rootDomain}`,
     expires: new Date(0),
   });
   res.cookies.set("accessToken", "", {
@@ -14,6 +16,7 @@ export const POST = async (req: NextRequest) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
     path: "/",
+    domain: `.${rootDomain}`,
     expires: new Date(0),
   });
   return res;

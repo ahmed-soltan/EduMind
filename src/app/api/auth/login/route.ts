@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
 import { settings, users } from "@/db/schema";
+import { rootDomain } from "@/lib/utils";
 
 export const POST = async (req: NextRequest) => {
   const { email, password } = await req.json();
@@ -58,12 +59,14 @@ export const POST = async (req: NextRequest) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    domain: `.${rootDomain}`,
     path: "/",
   });
   res.cookies.set("accessToken", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    domain: `.${rootDomain}`,
     path: "/",
   });
   return res;

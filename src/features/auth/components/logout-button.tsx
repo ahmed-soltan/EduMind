@@ -1,7 +1,6 @@
 import { UserButton } from "@/components/user-button";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
-import { usePathname } from "next/navigation";
 import { useLogout } from "../api/use-logout";
 
 export const LogoutButton = ({ ...props }) => {
