@@ -14,6 +14,11 @@ function buildRootLoginUrl(): string {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  const tenantRoutes = ["/dashboard"];
+  const isTenantRoute = tenantRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   if (pathname.startsWith("/auth")) {
     return NextResponse.next();
@@ -21,8 +26,13 @@ export async function middleware(request: NextRequest) {
   // Authentication cookie handling (token verification / refresh)
   const access = request.cookies.get("accessToken")?.value;
   // If no access token, allow page to handle login / redirect
-  if (!access) {
+
+  if (!access && isTenantRoute) {
     return NextResponse.redirect(buildRootLoginUrl());
+  }
+
+  if(!access){
+    return NextResponse.next();
   }
 
   let payload: any = null;
@@ -50,6 +60,7 @@ export async function middleware(request: NextRequest) {
 
       if (!refreshRes.ok) {
         // refresh failed => redirect to login (on the current host)
+        console.log("first")
         return NextResponse.redirect(buildRootLoginUrl());
       }
 
@@ -94,10 +105,6 @@ export async function middleware(request: NextRequest) {
 
   const subdomain = extractSubdomain(request);
 
-  const tenantRoutes = ["/dashboard"];
-  const isTenantRoute = tenantRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
 
   // If this is a subdomain, rewrite routes to your /s/[subdomain] routes
   console.log(subdomain);

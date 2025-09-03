@@ -23,11 +23,14 @@ export async function getUserSession(): Promise<Session> {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
+  console.log({accessToken})
+
   if (!accessToken) return { isAuthenticated: false, user: null };
 
   try {
     const { payload } = await jwtVerify(accessToken, ACCESS_SECRET);
 
+    console.log({payload})
     return {
       isAuthenticated: true,
       user: (payload as any).user as UserSession,
