@@ -13,6 +13,8 @@ export const runtime = "nodejs"; // ensure Node runtime (not Edge)
 export const GET = async (req: NextRequest) => {
   const session = await getUserSession();
 
+  console.log(session)
+
   if (!session.isAuthenticated) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

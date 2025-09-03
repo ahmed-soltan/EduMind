@@ -44,22 +44,22 @@ const data = {
     },
     {
       title: "AI Assistant",
-      url: "/ai-assistant",
+      url: "ai-assistant",
       icon: IconRobot,
     },
     {
       title: "Quiz Generator",
-      url: "/quiz-generator",
+      url: "quiz-generator",
       icon: IconClipboardText,
     },
     {
       title: "Flash Cards",
-      url: "/decks",
+      url: "decks",
       icon: IconCards,
     },
     {
       title: "Notes",
-      url: "/notes",
+      url: "notes",
       icon: IconFile,
     },
   ],

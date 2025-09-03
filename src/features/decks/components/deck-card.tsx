@@ -67,7 +67,7 @@ export const DeckCard = ({ deck }: DeckCardProps) => {
             className="flex-1"
             disabled={isPending}
           >
-            <Link href={`decks/${deck.id}/flash-cards`}>
+            <Link href={`/dashboard/decks/${deck.id}/flash-cards`}>
               <Eye className="w-4 h-4 mr-2" />
               View Flash Cards
             </Link>

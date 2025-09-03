@@ -3,39 +3,44 @@ import { NextRequest } from "next/server";
 
 export function extractSubdomain(request: NextRequest): string | null {
   const url = request.url;
-  const host = request.headers.get('host') || '';
-  const hostname = host.split(':')[0];
+  const host = request.headers.get("host") || "";
+  const hostname = host.split(":")[0]; // strip port if exists
 
-  // Local development environment
-  if (url.includes('localhost') || url.includes('127.0.0.1')) {
-    // Try to extract subdomain from the full URL
-    const fullUrlMatch = url.match(/http:\/\/([^.]+)\.localhost/);
-    if (fullUrlMatch && fullUrlMatch[1]) {
-      return fullUrlMatch[1];
-    }
+  console.log("Hostname:", hostname);
 
-    // Fallback to host header approach
-    if (hostname.includes('.localhost')) {
-      return hostname.split('.')[0];
-    }
+  // Local development: support localhost, 127.0.0.1, and lvh.me
+  if (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.endsWith(".localhost") ||
+    hostname.endsWith(".lvh.me") ||
+    hostname === "lvh.me"
+  ) {
+    // sub.localhost
+    const localhostMatch = hostname.match(/^([^.]+)\.localhost$/);
+    if (localhostMatch) return localhostMatch[1];
+
+    // sub.lvh.me
+    const lvhMatch = hostname.match(/^([^.]+)\.lvh\.me$/);
+    if (lvhMatch) return lvhMatch[1];
 
     return null;
   }
 
-  // Production environment
-  const rootDomainFormatted = rootDomain.split(':')[0];
+  // Production environment: use configured rootDomain
+  const rootDomainFormatted = (rootDomain || "").split(":")[0];
 
   // Handle preview deployment URLs (tenant---branch-name.vercel.app)
-  if (hostname.includes('---') && hostname.endsWith('.vercel.app')) {
-    const parts = hostname.split('---');
+  if (hostname.includes("---") && hostname.endsWith(".vercel.app")) {
+    const parts = hostname.split("---");
     return parts.length > 0 ? parts[0] : null;
   }
 
-  // Regular subdomain detection
+  // Regular subdomain detection (e.g. ahmed.example.com)
   const isSubdomain =
     hostname !== rootDomainFormatted &&
     hostname !== `www.${rootDomainFormatted}` &&
     hostname.endsWith(`.${rootDomainFormatted}`);
 
-  return isSubdomain ? hostname.replace(`.${rootDomainFormatted}`, '') : null;
+  return isSubdomain ? hostname.replace(`.${rootDomainFormatted}`, "") : null;
 }

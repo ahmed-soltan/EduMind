@@ -137,7 +137,7 @@ export function SectionCards() {
             </p>
           </div>
           <Button variant="link" className="px-0 text-sm">
-            <Link href={"dashboard/decks"} className="text-blue-500">
+            <Link href={"/dashboard/decks"} className="text-blue-500">
               View all Flashcards Decks →
             </Link>
           </Button>
@@ -152,7 +152,7 @@ export function SectionCards() {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-2 text-sm">
           <Button variant="link" className="px-0 text-sm">
-            <Link href={"dashboard/ai-assistant"} className="text-blue-500">
+            <Link href={"/dashboard/ai-assistant"} className="text-blue-500">
               View all documents →
             </Link>
           </Button>

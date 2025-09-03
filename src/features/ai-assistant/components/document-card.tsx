@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Document } from "@/db/types";
-import { cn } from "@/lib/utils";
+import { cn, protocol, rootDomain } from "@/lib/utils";
 import { Ellipsis, SquareArrowOutUpRight, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ interface DocumentCardProps {
 export const DocumentCard = ({ document }: DocumentCardProps) => {
   const pathname = usePathname();
   const currentDocument = pathname.split("/").slice(-1).join("/");
-  const redirectUrl = pathname.split("/").slice(0, 4).join("/");
+
 
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const { mutateAsync, isPending } = useDeleteDocument();
@@ -41,7 +41,7 @@ export const DocumentCard = ({ document }: DocumentCardProps) => {
         variant={"destructive"}
       />
       <Link
-        href={`${redirectUrl}/${document.id}`}
+        href={`/dashboard/ai-assistant/${document.id}`}
         key={document.id}
         className={cn(
           "rounded-lg hover:bg-accent px-3 pt-1 min-h-12 space-y-2 flex items-center justify-between",

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, XCircle } from "lucide-react";
 import { QuizAttempt } from "@/db/types";
 import Link from "next/link";
+import { protocol, rootDomain } from "@/lib/utils";
 
 export default function QuizResult({
   quizAttempt,
@@ -74,7 +75,7 @@ export default function QuizResult({
           {/* Actions */}
           <div className="flex gap-3">
             <Button variant="default" asChild>
-              <Link href={`/${subdomain}/dashboard/quiz-generator`}>
+              <Link href={`/dashboard/quiz-generator`}>
                 Return to Dashboard
               </Link>
             </Button>

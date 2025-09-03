@@ -24,7 +24,6 @@ export function NavMain({
 }) {
   const pathname = usePathname();
   const isActive = (url: string) => pathname === url;
-  const mainPath = pathname.split("/").slice(0, 3).join("/");
 
   return (
     <SidebarGroup>
@@ -52,8 +51,8 @@ export function NavMain({
           {items.map((item) => (
             <Link
               key={item.url}
-              href={`${mainPath}${item.url}`}
-              className={isActive(`${mainPath}${item.url}`) ? "bg-muted" : ""}
+              href={`/dashboard/${item.url}`}
+              className={isActive(`/dashboard/${item.url}`) ? "bg-muted" : ""}
             >
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton tooltip={item.title}>

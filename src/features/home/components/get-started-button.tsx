@@ -26,7 +26,7 @@ export const GetStartedButton = ({
 
     if (data.hasOnboarded) {
       // Path-based subdomain routing
-      setHref(`${protocol}://${sanitizedSubdomain}.${rootDomain}/dashboard`);
+      setHref(`${protocol}://${sanitizedSubdomain}.lvh.me:3000/dashboard`);
     } else {
       setHref("/onboarding");
     }

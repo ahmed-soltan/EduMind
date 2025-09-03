@@ -201,7 +201,7 @@ export const QuizInterface = React.memo(
               error ? (
                 <div className="flex items-center gap-5">
                   <Button asChild>
-                    <Link href={`/${subdomain}/dashboard/quiz-generator`}>
+                    <Link href={`/dashboard/quiz-generator`}>
                       Back To Dashboard
                     </Link>
                   </Button>
@@ -235,7 +235,7 @@ export const QuizInterface = React.memo(
             )}
             {isReviewMode && (
               <Button asChild>
-                <Link href={`/${subdomain}/dashboard/quiz-generator`}>
+                <Link href={`/dashboard/quiz-generator`}>
                   Back To Dashboard
                 </Link>
               </Button>

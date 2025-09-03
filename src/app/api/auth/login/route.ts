@@ -59,15 +59,15 @@ export const POST = async (req: NextRequest) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-    domain: `.${rootDomain}`,
     path: "/",
+    domain: `.${rootDomain}`,
   });
   res.cookies.set("accessToken", accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-    domain: `.${rootDomain}`,
     path: "/",
+    domain: `.${rootDomain}`,
   });
   return res;
 };
