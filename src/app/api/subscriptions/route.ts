@@ -15,9 +15,9 @@ import { Plans, User } from "@/db/types";
 import { extractSubdomain } from "@/utils/extract-subdomain";
 import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
-const PAYMOB_SECRET_KEY = process.env.PAYMOB_SECRET_KEY;
-const PAYMOB_PUBLIC_KEY = process.env.PAYMOB_PUBLIC_KEY;
-const SUBSCRIPTION_PLAN_IDS = {
+const paymobSecretKey = process.env.PAYMOB_SECRET_KEY;
+const paymobPublicKey = process.env.PAYMOB_PUBLIC_KEY;
+const subscriptionPlanIds = {
   PRO_PLAN_MONTHLY: "4317",
   PRO_PLAN_ANNUAL: "4318",
   TEAMS_PLAN_ANNUAL: "4331",
@@ -36,13 +36,13 @@ async function createPaymentIntention(
   const planSegment = plan.name.toUpperCase().replace(/\s+/g, "_");
   const cycleSegment = billingCycle.toUpperCase();
   const subscriptionPlanKey =
-    `${planSegment}_PLAN_${cycleSegment}` as keyof typeof SUBSCRIPTION_PLAN_IDS;
+    `${planSegment}_PLAN_${cycleSegment}` as keyof typeof subscriptionPlanIds;
 
-  const subscriptionPlanId = SUBSCRIPTION_PLAN_IDS[subscriptionPlanKey];
+  const subscriptionPlanId = subscriptionPlanIds[subscriptionPlanKey];
   if (!subscriptionPlanId) throw new Error("Invalid subscription plan ID");
 
   const headers = new Headers();
-  headers.append("Authorization", `Token ${PAYMOB_SECRET_KEY}`);
+  headers.append("Authorization", `Token ${paymobSecretKey}`);
   headers.append("Content-Type", "application/json");
 
   // start date = tomorrow (as you had)
@@ -225,7 +225,7 @@ export const POST = async (req: NextRequest) => {
       })
       .where(eq(subscriptions.id, localSubscriptionId));
 
-    const checkoutUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${PAYMOB_PUBLIC_KEY}&clientSecret=${intention.client_secret}`;
+    const checkoutUrl = `https://accept.paymob.com/unifiedcheckout/?publicKey=${paymobPublicKey}&clientSecret=${intention.client_secret}`;
 
     // Return checkout url AND our local subscription id (so frontend can show pending state)
     return NextResponse.json({
