@@ -15,12 +15,8 @@ import { Plans, User } from "@/db/types";
 import { extractSubdomain } from "@/utils/extract-subdomain";
 import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
-const PAYMOB_SECRET_KEY =
-  process.env.PAYMOB_SECRET_KEY ||
-  "egy_sk_test_26aa83eb99befcd8eb4de3c32c97878d0bcc852eec54573efe23ebee46ed8dbf";
-const PAYMOB_PUBLIC_KEY =
-  process.env.PAYMOB_PUBLIC_KEY ||
-  "egy_pk_test_03f6611IZkMXFAIj1wuIyzZ2pzhxdUg6";
+const PAYMOB_SECRET_KEY = process.env.PAYMOB_SECRET_KEY;
+const PAYMOB_PUBLIC_KEY = process.env.PAYMOB_PUBLIC_KEY;
 const SUBSCRIPTION_PLAN_IDS = {
   PRO_PLAN_MONTHLY: "4317",
   PRO_PLAN_ANNUAL: "4318",
