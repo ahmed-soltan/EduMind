@@ -5,7 +5,10 @@ export const useGetRecentActivities = () => {
   return useQuery<any, Error, UserActivity[]>({
     queryKey: ["recentActivities"],
     queryFn: async () => {
-      const response = await fetch("/api/activities?limit=5");
+      const response = await fetch("/api/activities?limit=5", {
+        method: "GET",
+        cache: "no-store",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch recent activities");
       }

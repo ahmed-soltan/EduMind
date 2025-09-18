@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
-import { settings, users } from "@/db/schema";
+import { users } from "@/db/schema";
 import { rootDomain } from "@/lib/utils";
 
 export const POST = async (req: NextRequest) => {
@@ -16,22 +16,12 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  const [userSettings] = await db
-    .select({ subdomain: settings.subdomain })
-    .from(settings)
-    .where(eq(settings.userId, user.id));
-
   const accessSecret = new TextEncoder().encode(process.env.ACCESS_SECRET!);
   const refreshSecret = new TextEncoder().encode(process.env.REFRESH_SECRET!);
 
   const accessToken = await new SignJWT({
     user: {
       id: user.id,
-      email: user.email,
-      subdomain: userSettings.subdomain,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
     },
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -42,11 +32,6 @@ export const POST = async (req: NextRequest) => {
   const refreshToken = await new SignJWT({
     user: {
       id: user.id,
-      email: user.email,
-      subdomain: userSettings.subdomain,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
     },
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -54,7 +39,7 @@ export const POST = async (req: NextRequest) => {
     .setExpirationTime("7d")
     .sign(refreshSecret);
 
-  const res = NextResponse.json({ accessToken });
+  const res = NextResponse.json({ accessToken, lastActiveTenantSubdomain: user.lastActiveTenantSubdomain });
   res.cookies.set("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -69,5 +54,13 @@ export const POST = async (req: NextRequest) => {
     path: "/",
     domain: `.${rootDomain}`,
   });
+  res.cookies.set("subdomain", user.lastActiveTenantSubdomain!, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    path: "/",
+    domain: `.${rootDomain}`,
+  });
+
   return res;
 };

@@ -1,5 +1,6 @@
 // hooks/useAddDocument.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export type UploadedFile = {
   title: string;
@@ -36,7 +37,12 @@ export const useAddDocument = () => {
           body: formData,
         });
 
-        if (!response.ok) throw new Error("Failed to upload document (file).");
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null);
+          if (errorBody?.error) {
+            throw new Error(errorBody.error || "Something went wrong");
+          }
+        }
         const result = await response.json();
         return result.documentId;
       }
@@ -54,6 +60,10 @@ export const useAddDocument = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
+      queryClient.invalidateQueries({ queryKey: ["can-create", "documents"] });
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
+    }
   });
 };

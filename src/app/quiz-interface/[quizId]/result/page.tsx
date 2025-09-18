@@ -4,16 +4,14 @@ import { redirect } from "next/navigation";
 import QuizResult from "./quiz-result";
 
 import { getUserSession } from "@/utils/get-user-session";
-import { getUserSubdomain } from "@/actions/get-user-subdomain";
 
 const QuizResultPage = async ({ params }: { params: Promise<{ quizId: string }> }) => {
   const { quizId } = await params;
 
   const cookieStore = await cookies();
 
-  const [session, subdomain, response] = await Promise.all([
+  const [session, response] = await Promise.all([
     getUserSession(),
-    getUserSubdomain(),
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/${quizId}/quiz-attempts`,
       {
@@ -25,13 +23,13 @@ const QuizResultPage = async ({ params }: { params: Promise<{ quizId: string }> 
     ),
   ]);
 
-  if (!session.isAuthenticated || !subdomain) {
+  if (!session.isAuthenticated) {
     redirect(`/auth/login`);
   }
 
   const { attempt } = await response.json();
 
-  return <QuizResult quizAttempt={attempt} subdomain={subdomain} />;
+  return <QuizResult quizAttempt={attempt}/>;
 };
 
 export default QuizResultPage;

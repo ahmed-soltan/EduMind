@@ -2,6 +2,7 @@ import z from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { CreateDeckSchema } from "../schemas";
+import { toast } from "sonner";
 
 export const useCreateDeck = () => {
   const queryClient = useQueryClient();
@@ -16,13 +17,21 @@ export const useCreateDeck = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create deck");
+        const errorBody = await response.json().catch(() => null);
+        if (errorBody?.error) {
+          throw new Error(errorBody.error || "Something went wrong");
+        }
       }
 
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["decks"] });
+      queryClient.invalidateQueries({ queryKey: ["userActivities"] });
+      queryClient.invalidateQueries({ queryKey: ["can-create", "decks"] });
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
+    }
   });
 };

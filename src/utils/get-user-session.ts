@@ -1,9 +1,10 @@
 // app/utils/get-user-session.ts
-import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
+
 import { User } from "@/db/types";
 
-type UserSession = User & { subdomain: string };
+type UserSession = Pick<User, "id">;
 
 export type Session =
   | {
@@ -23,14 +24,11 @@ export async function getUserSession(): Promise<Session> {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
 
-  console.log({accessToken})
-
   if (!accessToken) return { isAuthenticated: false, user: null };
 
   try {
     const { payload } = await jwtVerify(accessToken, ACCESS_SECRET);
 
-    console.log({payload})
     return {
       isAuthenticated: true,
       user: (payload as any).user as UserSession,

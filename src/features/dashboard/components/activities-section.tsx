@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRecentActivities } from "../api/use-get-recent-activities";
 
 export const ActivitiesSection = () => {
@@ -20,7 +20,7 @@ export const ActivitiesSection = () => {
 
   if (isLoading) {
     return (
-      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs w-full min-h-[500px]">
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs w-full h-full">
         <Card>
           <CardHeader>
             <Skeleton className="h-8 w-40 mb-2" />
@@ -28,7 +28,10 @@ export const ActivitiesSection = () => {
           <CardContent>
             <div className="flex flex-col items-start w-full gap-3">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4">
+                <div
+                  key={i}
+                  className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4"
+                >
                   <div className="flex flex-col items-start gap-1 w-full max-w-[550px]">
                     <Skeleton className="h-5 w-32 mb-1" />
                     <Skeleton className="h-4 w-48" />
@@ -46,8 +49,12 @@ export const ActivitiesSection = () => {
     );
   }
 
+  if(!activities){
+    return null
+  }
+
   return (
-    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs w-full min-h-[500px]">
+    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs w-full h-full">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Recent Activities</CardTitle>
@@ -56,7 +63,10 @@ export const ActivitiesSection = () => {
           <div className="flex flex-col items-start w-full gap-3">
             {activities && activities.length > 0 ? (
               activities.map((activity) => (
-                <div key={activity.id} className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4">
+                <div
+                  key={activity.id}
+                  className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4"
+                >
                   <div className="flex flex-col items-start gap-1 w-full max-w-[550px]">
                     <h1 className="text-md font-semibold line-clamp-1">
                       {activity.activityTitle}

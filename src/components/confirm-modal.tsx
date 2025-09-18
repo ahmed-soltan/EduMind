@@ -39,8 +39,8 @@ export const ConfirmModal = ({
 
   return (
     <ResponsiveModal open={open} onOpenChange={setOpen}>
-      <Card className="w-full h-full border-none shadow-none">
-        <CardContent className="pt-8">
+      <Card className="w-full h-full border-neutral-500 shadow-none">
+        <CardContent>
           <CardHeader className="p-0">
             <CardTitle>{title}</CardTitle>
             <CardDescription>{message}</CardDescription>

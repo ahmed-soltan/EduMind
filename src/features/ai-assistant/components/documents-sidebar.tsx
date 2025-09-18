@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { IconFiles } from "@tabler/icons-react";
-import { Loader2, Menu, Plus } from "lucide-react";
+import { Loader2, Menu, Plus, Crown } from "lucide-react";
 
+import { Hint } from "@/components/hint";
 import { DocumentCard } from "./document-card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -17,14 +18,23 @@ import {
 import { SIDEBAR_WIDTH_MOBILE } from "@/components/ui/sidebar";
 
 import { useGetDocuments } from "../api/use-get-documents";
+import { useCanCreate } from "@/hooks/use-can-create-feature";
 import { useCreateDocumentModal } from "../hooks/use-create-document-modal";
 
 import { Document } from "@/db/types";
+import { useBillingModal } from "@/features/billing/hooks/use-billing-modal";
+import { useHasPermission } from "@/features/dashboard/api/use-has-permission";
 
 export const DocumentsSidebar = () => {
   const [open, setOpen] = useState(false);
   const { data: documents, isLoading } = useGetDocuments();
   const { open: openAddDocumentModal } = useCreateDocumentModal();
+  const { data: documentLimits } = useCanCreate("documents");
+  const { openModal: openBillingModal } = useBillingModal();
+  const { data: hasPermission, isLoading: isLoadingPermission } =
+    useHasPermission("document:upload");
+
+  const canCreateDocument = documentLimits?.documents.canCreate;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -53,12 +63,34 @@ export const DocumentsSidebar = () => {
             Documents ({documents?.length ?? 0})
           </SheetTitle>
         </SheetHeader>
-        <div className="w-full">
-          <Button className="w-full" onClick={openAddDocumentModal}>
-            <Plus className="size-5" />
-            Add New Document
-          </Button>
-        </div>
+        {hasPermission && (
+          <div className="w-full">
+            <Hint
+              label={
+                !canCreateDocument
+                  ? "Upgrade your plan to add more documents"
+                  : "Add a new document"
+              }
+              side="bottom"
+            >
+              <div className={!canCreateDocument ? "cursor-not-allowed" : ""}>
+                <Button
+                  className="w-full"
+                  onClick={
+                    canCreateDocument ? openAddDocumentModal : openBillingModal
+                  }
+                  disabled={!canCreateDocument}
+                >
+                  <Plus className="size-5" />
+                  Add New Document
+                  {!canCreateDocument && (
+                    <Crown className="w-4 h-4 ml-1 text-yellow-500" />
+                  )}
+                </Button>
+              </div>
+            </Hint>
+          </div>
+        )}
         <Separator />
         <div className="flex h-full w-full flex-col">
           {isLoading ? (

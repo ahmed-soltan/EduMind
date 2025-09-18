@@ -24,22 +24,42 @@ function isYesterday(a: string, b: string): boolean {
 type Source = "quiz" | "flashcards";
 
 export async function recordStudyEvent(opts: {
-  userId: string;
+  tenantMemberId: string;
   source: Source;
   occurredAtUtc?: Date; // default now()
+  tenantId: string; // default null
 }) {
   const occurredAt = opts.occurredAtUtc ?? new Date();
 
   await db.transaction(async (tx) => {
     // 1) Ensure streaks row exists and get tz
     let s = await tx.query.streaks.findFirst({
-      where: eq(streaks.userId, opts.userId),
-      columns: { userId: true, tz: true, current: true, longest: true, lastActiveDate: true },
+      where: eq(streaks.tenantMemberId, opts.tenantMemberId),
+      columns: {
+        tenantMemberId: true,
+        tz: true,
+        current: true,
+        longest: true,
+        lastActiveDate: true,
+      },
     });
 
     if (!s) {
-      await tx.insert(streaks).values({ userId: opts.userId, tz: "UTC" });
-      s = { userId: opts.userId, tz: "UTC", current: 0, longest: 0, lastActiveDate: null };
+      await tx
+        .insert(streaks)
+        .values({
+          id: crypto.randomUUID(),
+          tenantMemberId: opts.tenantMemberId,
+          tz: "UTC",
+          tenantId: opts.tenantId,
+        });
+      s = {
+        tenantMemberId: opts.tenantMemberId,
+        tz: "UTC",
+        current: 0,
+        longest: 0,
+        lastActiveDate: null,
+      };
     }
 
     const userTz = s.tz || "UTC";
@@ -50,7 +70,8 @@ export async function recordStudyEvent(opts: {
       .insert(studyDays)
       .values({
         id: crypto.randomUUID(),
-        userId: opts.userId,
+        tenantId: opts.tenantId,
+        tenantMemberId: opts.tenantMemberId,
         activityDate: localDate as unknown as any,
         firstEventAt: occurredAt,
         source: opts.source,
@@ -70,7 +91,7 @@ export async function recordStudyEvent(opts: {
           ELSE source
         END,
         first_event_at = LEAST(first_event_at, ${occurredAt}::timestamptz)
-        WHERE user_id = ${opts.userId}::uuid
+        WHERE tenant_member_id = ${opts.tenantMemberId}::uuid
           AND activity_date = ${localDate}::date;
       `);
     }
@@ -100,7 +121,7 @@ export async function recordStudyEvent(opts: {
           lastActiveDate: localDate as unknown as any,
           updatedAt: new Date(),
         })
-        .where(eq(streaks.userId, opts.userId));
+        .where(eq(streaks.tenantMemberId, opts.tenantMemberId));
     }
   });
 }

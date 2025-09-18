@@ -1,16 +1,15 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trophy, XCircle } from "lucide-react";
-import { QuizAttempt } from "@/db/types";
 import Link from "next/link";
-import { protocol, rootDomain } from "@/lib/utils";
+import { Trophy, XCircle } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+import { QuizAttempt } from "@/db/types";
 
 export default function QuizResult({
   quizAttempt,
-  subdomain,
 }: {
   quizAttempt: QuizAttempt;
-  subdomain: string;
 }) {
   const passed = quizAttempt.score! >= 50; // change threshold as needed
 

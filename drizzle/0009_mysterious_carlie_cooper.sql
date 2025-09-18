@@ -1,0 +1,1 @@
+ALTER TABLE "assistant_messages" ADD COLUMN "member_name" varchar(255);

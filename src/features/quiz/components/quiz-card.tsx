@@ -85,9 +85,7 @@ export const QuizCard = ({ quiz, quizAttempt }: QuizCardProps) => {
                   variant="secondary"
                   className="bg-blue-400/20 text-blue-500 border-blue-600 ml-1"
                 >
-                  {new Date(quiz.createdAt).getTime() < Date.now() + 1
-                    ? "New"
-                    : "Not Attempted"}
+                  Not Attempted
                 </Badge>
               )}
             </div>

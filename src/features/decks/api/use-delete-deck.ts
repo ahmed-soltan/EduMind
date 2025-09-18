@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useDeleteDeck = () => {
   const queryClient = useQueryClient();
@@ -14,6 +15,10 @@ export const useDeleteDeck = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["decks"] });
+      queryClient.invalidateQueries({ queryKey: ["can-create", "decks"] });
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
+    }
   });
 };

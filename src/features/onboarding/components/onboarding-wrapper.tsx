@@ -10,10 +10,10 @@ const WizardFormDynamic = dynamic(
   { ssr: false }
 );
 
-export const OnboardingWrapper = () => {
+export const OnboardingWrapper = ({tenantId}: {tenantId: string}) => {
   return (
     <div>
-      <WizardFormDynamic />
+      <WizardFormDynamic tenantId={tenantId} />
     </div>
   );
 };

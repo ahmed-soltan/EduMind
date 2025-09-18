@@ -1,0 +1,1 @@
+ALTER TABLE "tenant_roles" ADD COLUMN "updated_at" timestamp DEFAULT now();

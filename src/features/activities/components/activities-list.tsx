@@ -17,61 +17,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { useGetActivities } from "../api/use-get-activities";
+import { useActivities } from "../hooks/use-activities";
 
 export const ActivitiesList = () => {
-  const { data: activities, isLoading } = useGetActivities();
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [dateFilter, setDateFilter] = useState<string>("all");
+  const {
+    filteredActivities,
+    isLoading,
+    activityTypes,
+    dateFilter,
+    setDateFilter,
+    setTypeFilter,
+    typeFilter,
+  } = useActivities();
 
   // Get all unique activity types
-  const activityTypes = useMemo(() => {
-    if (!activities) return [];
-    const types = Array.from(new Set(activities.map((a) => a.activityType)));
-    return types;
-  }, [activities]);
 
-  // Date filter logic
-  function isDateMatch(date: Date, filter: string) {
-    const d = new Date(date);
-    const now = new Date();
-    if (filter === "all") return true;
-    if (filter === "today") {
-      return d.toDateString() === now.toDateString();
-    }
-    if (filter === "yesterday") {
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
-      return d.toDateString() === yesterday.toDateString();
-    }
-    if (filter === "thisMonth") {
-      return (
-        d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-      );
-    }
-    if (filter === "lastMonth") {
-      const lastMonth = new Date(now);
-      lastMonth.setMonth(now.getMonth() - 1);
-      return (
-        d.getMonth() === lastMonth.getMonth() &&
-        d.getFullYear() === lastMonth.getFullYear()
-      );
-    }
-    return true;
+  if (isLoading) {
+    return (
+      <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 w-full">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Activities</CardTitle>
+            <CardAction>
+              {/* Loading skeleton for filters */}
+              <div className="flex flex-wrap gap-4 mb-6 items-center">
+                <div className="flex flex-col gap-1">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-10 w-[140px]" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Skeleton className="h-3 w-8" />
+                  <Skeleton className="h-10 w-[140px]" />
+                </div>
+              </div>
+            </CardAction>
+          </CardHeader>
+          <CardContent>
+            {/* Loading skeleton for activities */}
+            <div className="flex flex-col items-start w-full gap-3">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4"
+                >
+                  <div className="flex flex-col items-start gap-2 flex-1">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-4 w-72" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
-
-  // Filter activities
-  const filteredActivities = useMemo(() => {
-    if (!activities) return [];
-    return activities.filter((a) => {
-      const typeMatch = typeFilter === "all" || a.activityType === typeFilter;
-      const dateMatch = isDateMatch(a.activityDate, dateFilter);
-      return typeMatch && dateMatch;
-    });
-  }, [activities, typeFilter, dateFilter]);
-
-  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 w-full">
@@ -132,7 +139,10 @@ export const ActivitiesList = () => {
           <div className="flex flex-col items-start w-full gap-3">
             {filteredActivities && filteredActivities.length > 0 ? (
               filteredActivities.map((activity) => (
-                <div className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4">
+                <div
+                  key={activity.id}
+                  className="flex flex-wrap gap-3 items-start justify-between w-full border-neutral-500 border rounded-lg p-4"
+                >
                   <div className="flex flex-col items-start gap-1">
                     <h1 className="text-md font-semibold">
                       {activity.activityTitle}

@@ -1,0 +1,1 @@
+ALTER TABLE "settings" ALTER COLUMN "tenant_member_id" DROP NOT NULL;

@@ -1,8 +1,9 @@
+import { eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+
 import { db } from "@/db/conn";
 import { assistantMessages } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
-import { and, eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (
   req: NextRequest,
@@ -16,7 +17,7 @@ export const GET = async (
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if(!documentId){
+  if (!documentId) {
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
   }
 
@@ -27,10 +28,11 @@ export const GET = async (
       createdAt: assistantMessages.createdAt,
       role: assistantMessages.role,
       document: assistantMessages.documentId,
+      memberName: assistantMessages.memberName,
     })
     .from(assistantMessages)
     .where(eq(assistantMessages.documentId, documentId))
-    .orderBy(assistantMessages.createdAt)
+    .orderBy(assistantMessages.createdAt);
 
   return NextResponse.json(messages);
 };

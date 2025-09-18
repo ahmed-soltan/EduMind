@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FormBanner } from "@/components/form-banner";
 import {
   Form,
   FormControl,
@@ -20,9 +21,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { loginSchema } from "../schemas";
-import { useCallbackUrl } from "@/hooks/use-callback-url";
 import { useLogin } from "../api/use-login";
-import { FormBanner } from "@/components/form-banner";
+import { useCallbackUrl } from "@/hooks/use-callback-url";
+import { APP_DOMAIN, protocol } from "@/lib/utils";
 
 export const LoginForm = () => {
   const router = useRouter();
@@ -38,12 +39,17 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    const { accessToken } = await mutateAsync(data);
+    const { accessToken, lastActiveTenantSubdomain } = await mutateAsync(data);
+    if (error) return;
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken!);
     }
     router.refresh();
-    router.push(callbackUrl);
+    if (lastActiveTenantSubdomain) {
+      window.location.href = `${protocol}://${lastActiveTenantSubdomain}.${APP_DOMAIN}/dashboard`;
+    } else {
+      router.push(callbackUrl);
+    }
   };
 
   return (
@@ -54,7 +60,7 @@ export const LoginForm = () => {
             Welcome Back 👋
           </CardTitle>
         </CardHeader>
-        {error && <FormBanner message={error.message} />}
+        {error && <FormBanner message={"invalid credentials"} />}
         <Form {...form}>
           <form
             action=""

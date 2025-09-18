@@ -42,6 +42,7 @@ export const SignupForm = () => {
 
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     const { accessToken } = await mutateAsync(data);
+    if (error) return;
     if (accessToken) {
       localStorage.setItem("accessToken", accessToken!);
     }
@@ -94,16 +95,6 @@ export const SignupForm = () => {
                       placeholder="Enter your last name"
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="space-y-0">
-                  <Label>Email Address</Label>
                   <FormMessage />
                 </FormItem>
               )}

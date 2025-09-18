@@ -1,26 +1,23 @@
-import { cookies } from "next/headers";
+"use client"
+
 import { BookOpen } from "lucide-react";
 
 import { Hint } from "@/components/hint";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FlashCardActionButtons } from "./flash-card-actions-button";
+import { useGetDeck } from "@/features/decks/api/use-get-deck";
 
 interface FlashCardsHeaderProps {
   deckId: string;
 }
 
-export const FlashCardsHeader = async ({ deckId }: FlashCardsHeaderProps) => {
-  const cookieStore = await cookies();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/decks/${deckId}`,
-    {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    }
-  );
-  const data = await res.json();
+export const FlashCardsHeader = ({ deckId }: FlashCardsHeaderProps) => {
+  const {data, isLoading} = useGetDeck(deckId);
+
+  if(isLoading){
+    return null
+  }
 
   return (
     <header className="p-5 flex items-center justify-between gap-5 flex-wrap bg-card rounded-lg">

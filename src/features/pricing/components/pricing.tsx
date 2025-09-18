@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plan } from "../types";
 
 import { useGetPlans } from "../api/use-get-plans";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Pricing = () => {
   const { data, isLoading } = useGetPlans();
@@ -23,13 +24,6 @@ export const Pricing = () => {
             <br /> built to help students learn faster.
           </p>
         </div>
-        {/* {isLoading && (
-          <div className="mt-8 grid gap-6 md:mt-20 md:grid-cols-3">
-            <Skeleton className="h-[350px] w-full rounded-md" />
-            <Skeleton className="h-[350px] w-full rounded-md" />
-            <Skeleton className="h-[350px] w-full rounded-md" />
-          </div>
-        )} */}
         <Tabs
           defaultValue="monthly"
           className="w-[375px] mx-auto my-10 text-sm text-muted-foreground"
@@ -51,6 +45,13 @@ export const Pricing = () => {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+          {isLoading && (
+            <div className="mt-8 grid gap-6 md:mt-20 md:grid-cols-3 w-full">
+              <Skeleton className="h-[350px] w-full rounded-md" />
+              <Skeleton className="h-[350px] w-full rounded-md" />
+              <Skeleton className="h-[350px] w-full rounded-md" />
+            </div>
+          )}
         <div className="mt-8 grid gap-6 md:mt-20 md:grid-cols-3">
           {data &&
             data.plans.map((plan: Plan) => {
@@ -62,4 +63,4 @@ export const Pricing = () => {
       </div>
     </section>
   );
-}
+};

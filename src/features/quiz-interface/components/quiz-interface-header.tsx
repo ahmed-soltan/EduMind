@@ -13,9 +13,11 @@ export const QuizInterfaceHeader = React.memo(
   ({ quiz, attempt }: QuizInterfaceHeaderProps) => {
     return (
       <header className="w-full bg-neutral-900 p-5 border-b border-border">
-        <div className="w-full max-w-[1000px] mx-auto flex items-center justify-between">
-          <Logo />
-          <div className="flex items-center gap-6">
+        <div className="w-full max-w-[1000px] mx-auto flex items-center flex-wrap md:flex-nowrap justify-between gap-4">
+          <div className="hidden lg:flex">
+            <Logo />
+          </div>
+          <div className="flex items-center gap-6 lg:justify-end justify-between w-full">
             <QuizTimer quiz={quiz} attempt={attempt} />
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{quiz?.quiz.title}</h1>

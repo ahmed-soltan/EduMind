@@ -1,12 +1,13 @@
-import z from "zod";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { CreateAIGeneratedFlashCardSchema } from "../schemas";
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
 
 export const useCreateAIGeneratedFlashCard = () => {
   const deckId = useDeckId();
   const queryClient = useQueryClient();
+  const router = useRouter();
   return useMutation({
     mutationFn: async (data: { numFlashCards: number }) => {
       const response = await fetch(`/api/decks/${deckId}/flash-cards/ai`, {
@@ -17,13 +18,22 @@ export const useCreateAIGeneratedFlashCard = () => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to create flash card");
+        const errorBody = await response.json().catch(() => null);
+        if (errorBody?.error) {
+          throw new Error(errorBody.error || "Something went wrong");
+        }
       }
       return response.json();
     },
     onSuccess: () => {
+      router.refresh();
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
       queryClient.invalidateQueries({ queryKey: ["deck", deckId] });
+      queryClient.invalidateQueries({ queryKey: ["userActivities"] });
+      queryClient.invalidateQueries({ queryKey: ["can-create", "flashcards"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
     },
   });
 };

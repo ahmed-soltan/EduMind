@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/card";
 
 import { Plan } from "../types";
-import { usePathname } from "next/navigation";
-import { resolveRedirect } from "../utils";
-import { useCurrentUser } from "@/hooks/use-current-user";
+
+import { useSubscribe } from "../api/use-subscribe";
 
 interface PricingCardProps {
   plan: Plan;
@@ -22,14 +21,23 @@ interface PricingCardProps {
 }
 
 export const PricingCard = ({ plan, isAnnual }: PricingCardProps) => {
-  const pathname = usePathname();
-  const { data: userData, isLoading: isLoadingUser } = useCurrentUser();
-
-  const { target } = resolveRedirect(userData, plan);
+  const { mutateAsync, isPending } = useSubscribe();
 
   const price = isAnnual
     ? (plan.annualPrice / 100).toFixed(2)
-    : (plan.price / 100).toFixed(2);
+    : (plan.cents / 100).toFixed(2);
+
+  const handleSubscription = async () => {
+    const { checkoutUrl } = await mutateAsync({
+      planId: plan.id,
+      billingCycle: isAnnual ? "annual" : "monthly",
+      planName: plan.name,
+    });
+
+    if (checkoutUrl) {
+      window.location.href = checkoutUrl;
+    }
+  };
 
   return (
     <div key={plan.id} className="relative">
@@ -38,15 +46,14 @@ export const PricingCard = ({ plan, isAnnual }: PricingCardProps) => {
           Popular
         </span>
       )}
-      <Card className="flex flex-col h-[350px]">
+      <Card className="flex flex-col h-[720px]">
         <CardHeader>
           <CardTitle className="font-medium">{plan.name}</CardTitle>
           <span className="my-3 block text-2xl font-semibold">
-            {isAnnual ? `$${price} / yr` : `$${price} / mo`}
+            {isAnnual
+              ? `${plan.currency.toUpperCase()} ${price} / yr`
+              : `${plan.currency.toUpperCase()} ${price} / mo`}
           </span>
-          {plan.name === "Team" && (
-            <CardDescription className="text-sm">Per Member</CardDescription>
-          )}
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -64,11 +71,13 @@ export const PricingCard = ({ plan, isAnnual }: PricingCardProps) => {
 
         <CardFooter className="mt-auto">
           <Button
-            asChild
             variant={plan.name === "Pro" ? "default" : "outline"}
-            className="w-full"
+            className="w-full flex items-center"
+            disabled={isPending}
+            onClick={handleSubscription}
           >
-            <Link href={`/${target}`}>Get Started</Link>
+            {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            Get Started
           </Button>
         </CardFooter>
       </Card>

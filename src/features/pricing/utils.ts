@@ -25,7 +25,7 @@ export function resolveRedirect(user: User | null | undefined, plan: Plan | null
 
   // 5) If user hasn't onboarded yet -> onboarding (before payment)
   if (!userHasOnboarded) {
-    return { target: "onboarding" as const, reason: "user not onboarded" };
+    return { target: `onboarding/${planId}` as const, reason: "user not onboarded" };
   }
 
   // 2) If target plan is free -> go to dashboard (no purchase required)

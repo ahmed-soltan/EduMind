@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "plan_feature_unique" ON "plan_limits" USING btree ("plan_id","feature");

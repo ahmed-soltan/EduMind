@@ -1,4 +1,18 @@
-import { attemptsAnswers, deck, flashcards, quizAttempts, quizQuestions, userActivities } from "@/db/schema";
+import {
+  attemptsAnswers,
+  deck,
+  flashcards,
+  invoices,
+  permissions,
+  planLimits,
+  plans,
+  quizAttempts,
+  quizQuestions,
+  subscriptions,
+  tenantRoles,
+  tenants,
+  userActivities,
+} from "@/db/schema";
 import { InferSelectModel } from "drizzle-orm";
 import { documents, quizzes, users } from "./schema";
 
@@ -11,6 +25,30 @@ export type AttemptAnswers = InferSelectModel<typeof attemptsAnswers>;
 export type Deck = InferSelectModel<typeof deck>;
 export type FlashCard = InferSelectModel<typeof flashcards>;
 export type UserActivity = InferSelectModel<typeof userActivities>;
+export type Plans = InferSelectModel<typeof plans>;
+export type Subscription = InferSelectModel<typeof subscriptions>;
+export type Invoice = InferSelectModel<typeof invoices>;
+export type Permissions = InferSelectModel<typeof permissions>;
+export type PlanLimits = InferSelectModel<typeof planLimits>
+export type TenantRole = InferSelectModel<typeof tenantRoles>;
+export type Tenant = InferSelectModel<typeof tenants>;
+export type Roles = InferSelectModel<typeof tenantRoles>;
+
+export type Invoices = {
+  id: string;
+  amountCents: number;
+  currency: string;
+  issuedAt: Date;
+  paidAt: Date | null;
+  status: string;
+  plan: string;
+  billingCycle: string;
+}
+
+export type TenantSubscription = {
+  subscriptions: Subscription;
+  plans: Plans;
+};
 
 export type QuizData = {
   quiz: Quiz;
@@ -21,7 +59,7 @@ export type QuizData = {
 export type Attempt = {
   attempt: QuizAttempt;
   attemptAnswers: AttemptAnswers[];
-}
+};
 
 export type QuizInterface = {
   quiz: Quiz;
@@ -31,4 +69,18 @@ export type QuizInterface = {
 
 export type DeckData = Deck & {
   flashcardsCount: number;
+};
+
+
+export type TenantMemberContext = {
+  id: string;
+  tenantId: string;
+  roleId: string;
+  isActive: boolean;
+  subscriptionId?: string | null;
+  planId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  permissions: Permissions[];
 };

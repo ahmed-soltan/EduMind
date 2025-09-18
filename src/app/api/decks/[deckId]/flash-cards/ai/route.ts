@@ -1,11 +1,17 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
 import { db } from "@/db/conn";
+import { hasPermission } from "@/utils/has-permission";
 import { getUserSession } from "@/utils/get-user-session";
+import { extractSubdomain } from "@/utils/extract-subdomain";
+import { canCreateFeature } from "@/utils/can-create-feature";
 import { deck, flashcards, userActivities } from "@/db/schema";
+
+import { getTenantMember } from "@/actions/get-tenant-member";
+import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
 export const POST = async (
   req: NextRequest,
@@ -19,6 +25,49 @@ export const POST = async (
 
   const { deckId } = await params;
   const { numFlashCards } = await req.json();
+
+  const subdomain = extractSubdomain(req);
+
+  if (!subdomain) {
+    return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
+  }
+
+  const tenant = await getTenantBySubdomain(subdomain);
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+  }
+
+  let tenantMember;
+  try {
+    tenantMember = await getTenantMember(session.user.id, tenant.id);
+  } catch (err: any) {
+          return NextResponse.json(
+        { error: "Not a member of tenant" },
+        { status: 403 }
+      );
+  }
+
+  if (!tenantMember) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check permission to create flashcards
+  const allowed = await hasPermission(tenantMember.roleId, "flashcard:create");
+  if (!allowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { canCreate } = await canCreateFeature(
+    tenantMember.tenantId,
+    "flashcards"
+  );
+  if (!canCreate) {
+    return NextResponse.json(
+      { error: "Flashcard limit reached. Please upgrade your plan." },
+      { status: 403 }
+    );
+  }
 
   const [deckData] = await db
     .select({
@@ -88,7 +137,8 @@ Return the result as a valid JSON array only, without extra text.
     back: flashcard.back,
     hint: flashcard.hint,
     source: flashcard.source,
-    userId: session.user.id,
+    tenantId: tenantMember.tenantId,
+    createdBy: tenantMember.id,
     createdAt: new Date(),
   }));
 
@@ -96,10 +146,11 @@ Return the result as a valid JSON array only, without extra text.
     await db.insert(flashcards).values(values),
     await db.insert(userActivities).values({
       id: crypto.randomUUID(),
-      userId: session.user.id,
+      tenantId: tenantMember.tenantId,
+      tenantMemberId: tenantMember.id,
       activityType: "flashcards",
       activityDate: new Date(),
-      activityTitle: `Create Flashcards for Deck: ${deckData.title}`,
+      activityTitle: `${tenantMember.username} Created Flashcards for Deck: ${deckData.title}`,
       activityDescription: `AI generated new flashcards in deck ${deckData.title}`,
     }),
   ]);

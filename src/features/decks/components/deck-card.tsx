@@ -60,7 +60,7 @@ export const DeckCard = ({ deck }: DeckCardProps) => {
           </p>
         </CardContent>
 
-        <CardFooter className="pt-0 mt-auto flex items-center gap-2">
+        <CardFooter className="pt-0 mt-auto flex items-center gap-2 flex-wrap">
           <Button
             asChild
             variant={"outline"}

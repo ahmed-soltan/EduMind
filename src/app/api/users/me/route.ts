@@ -1,32 +1,73 @@
-import { db } from "@/db/conn";
-import { settings, users } from "@/db/schema";
-import { getUserSession } from "@/utils/get-user-session";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (req: NextRequest) => {
-  const userSession = await getUserSession();
+import { db } from "@/db/conn";
+import { users } from "@/db/schema";
+import { getUserSession } from "@/utils/get-user-session";
 
-  if (!userSession.isAuthenticated) {
+export const GET = async (req: NextRequest) => {
+  const session = await getUserSession();
+
+  if (!session.isAuthenticated) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-
-  const [user] = await db
+  const [userData] = await db
     .select({
       id: users.id,
       email: users.email,
       firstName: users.firstName,
       lastName: users.lastName,
-      avatar: users.avatar,
       hasOnboarded: users.hasOnboarded,
-      subdomain: settings.subdomain,
+      createdAt: users.createdAt,
     })
     .from(users)
-    .leftJoin(settings, eq(settings.userId, users.id));
+    .where(eq(users.id, session.user.id));
 
-  if (!user) {
-    return new NextResponse("User not found", { status: 404 });
+  if (!userData) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  return NextResponse.json(userData);
+};
+
+export const PATCH = async (req: NextRequest) => {
+  const session = await getUserSession();
+
+  if (!session.isAuthenticated) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    const { firstName, lastName, email } = body;
+
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        firstName,
+        lastName,
+        email,
+      })
+      .where(eq(users.id, session.user.id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        hasOnboarded: users.hasOnboarded,
+        createdAt: users.createdAt,
+      });
+
+    if (!updatedUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error("User update error:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 };

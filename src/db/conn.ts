@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { Redis } from '@upstash/redis'
 import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
@@ -16,5 +17,7 @@ if (!global.__PG_POOL__) global.__PG_POOL__ = pool;
 export const db = drizzle(pool, { schema });
 
 
-import { Redis } from '@upstash/redis'
-export const redis = Redis.fromEnv()
+export const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+})

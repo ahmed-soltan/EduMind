@@ -9,7 +9,10 @@ export const LogoutButton = ({ ...props }) => {
 
   if (!data) return null;
   return (
-    <UserButton onClick={()=>logout()} {...props} href={"/"}>
+    <UserButton onClick={()=>{
+      logout()
+      window.location.reload()
+    }} {...props} href={"/"}>
       Logout
     </UserButton>
   );

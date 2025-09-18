@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "last_active_tenant_subdomain" varchar(255);

@@ -1,11 +1,10 @@
-
 export type Plan = {
   id: number;
   name: string;
-  price: number;
+  cents: number;
   description: string;
   features: string[];
-  billing_cycle: "monthly" | "yearly";
+  currency: string;
   annual_discount_percent: number;
   annualPrice: number;
 };

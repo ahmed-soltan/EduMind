@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,9 +12,7 @@ const QuizInterface = dynamic(() =>
 );
 
 import { getUserSession } from "@/utils/get-user-session";
-import { getUserSubdomain } from "@/actions/get-user-subdomain";
 import { QuizInterfaceHeader } from "@/features/quiz-interface/components/quiz-interface-header";
-import { Suspense } from "react";
 
 const QuizInterfacePage = async ({
   params,
@@ -46,10 +45,9 @@ const QuizInterfacePage = async ({
     ).then((res) => res.json()),
   ]);
 
-  const subdomain = await getUserSubdomain();
 
   if (!quiz || !quiz.quiz) {
-    redirect(`/${subdomain}/dashboard`);
+    redirect(`/dashboard`);
   }
 
   return (
@@ -63,7 +61,6 @@ const QuizInterfacePage = async ({
             <QuizInterface
               quiz={quiz}
               attempt={quizAttempt}
-              subdomain={subdomain}
             />
           </Suspense>
         </div>

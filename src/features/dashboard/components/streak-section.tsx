@@ -55,16 +55,15 @@ export const StreakTracker= () => {
       </div>
     );
   }
-
   const today = new Date().toISOString().split('T')[0];
   const hasStudiedToday = streakData.studyDays.some((day:any) => day.activityDate === today);
   
 
   const getMotivationalMessage = () => {
-    if (streakData.streak.current === 0) return "Start your streak today! 💪";
-    if (streakData.streak.current < 3) return "Building momentum! 🚀";
-    if (streakData.streak.current < 7) return "Great progress! Keep it up! ⭐";
-    if (streakData.streak.current < 15) return "You're on fire! 🔥";
+    if (streakData.computed.computedCurrent === 0) return "Start your streak today! 💪";
+    if (streakData.computed.computedCurrent < 3) return "Building momentum! 🚀";
+    if (streakData.computed.computedCurrent < 7) return "Great progress! Keep it up! ⭐";
+    if (streakData.computed.computedCurrent < 15) return "You're on fire! 🔥";
     return "Incredible dedication! 🏆";
   };
 
@@ -81,7 +80,7 @@ export const StreakTracker= () => {
           <CardContent>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-bold text-primary animate-fade-in">
-                {streakData.streak.current}
+                {streakData.computed.computedCurrent}
               </span>
               <span className="text-muted-foreground">days</span>
             </div>
@@ -101,7 +100,7 @@ export const StreakTracker= () => {
           <CardContent>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-bold text-muted-foreground">
-                {streakData.streak.longest}
+                {streakData.computed.computedLongest}
               </span>
               <span className="text-muted-foreground">days</span>
             </div>

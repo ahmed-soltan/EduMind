@@ -1,6 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useQuizAttempt = (quizId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch(
@@ -17,6 +18,10 @@ export const useQuizAttempt = (quizId: string) => {
         throw new Error("Failed to submit quiz attempt");
       }
       return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+      queryClient.invalidateQueries({ queryKey: ["userActivities"] });
     },
   });
 };

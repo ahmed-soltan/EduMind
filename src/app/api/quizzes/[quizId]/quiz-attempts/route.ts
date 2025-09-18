@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/conn";
@@ -9,8 +9,11 @@ import {
   userActivities,
 } from "@/db/schema";
 
-import { getUserSession } from "@/utils/get-user-session";
 import { recordStudyEvent } from "@/utils/streak-helper";
+import { getUserSession } from "@/utils/get-user-session";
+import { extractSubdomain } from "@/utils/extract-subdomain";
+import { getTenantMember } from "@/actions/get-tenant-member";
+import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
 type IncomingAnswer = { questionId: string; answer: string };
 
@@ -26,6 +29,28 @@ export const POST = async (
 
   const { quizId } = await params;
   const body: { answers: IncomingAnswer[] } = await req.json();
+
+  const subdomain = extractSubdomain(req);
+
+  if (!subdomain) {
+    return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
+  }
+
+  const tenant = await getTenantBySubdomain(subdomain);
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+  }
+
+  let tenantMember;
+  try {
+    tenantMember = await getTenantMember(session.user.id, tenant.id);
+  } catch (err: any) {
+          return NextResponse.json(
+        { error: "Not a member of tenant" },
+        { status: 403 }
+      );
+  }
 
   const questions = await db
     .select()
@@ -54,7 +79,8 @@ export const POST = async (
 
   await db.insert(quizAttempts).values({
     id: attemptId,
-    userId: session.user.id,
+    tenantId: tenantMember.tenantId,
+    tenantMemberId: tenantMember.id,
     score: scorePercentage,
     quizId,
   });
@@ -67,21 +93,23 @@ export const POST = async (
       isCorrect: a.isCorrect,
     }))
   ),
-  await Promise.all([
-    await db.insert(userActivities).values({
-      id: crypto.randomUUID(),
-      userId: session.user.id,
-      activityType: "quizzes",
-      activityDate: new Date(),
-      activityTitle: `Quiz Attempt: ${quizId}`,
-      activityDescription: `You attempted the quiz: ${quizId}`,
-    }),
-    await recordStudyEvent({
-      userId: session.user.id,
-      source: "quiz",
-      occurredAtUtc: new Date(),
-    })
-  ]);
+    await Promise.all([
+      await db.insert(userActivities).values({
+        id: crypto.randomUUID(),
+        tenantId: tenantMember.tenantId,
+        tenantMemberId: tenantMember.id,
+        activityType: "quizzes",
+        activityDate: new Date(),
+        activityTitle: `Quiz Attempt: ${quizId}`,
+        activityDescription: `${tenantMember.username} attempted the quiz: ${quizId}`,
+      }),
+      await recordStudyEvent({
+        tenantMemberId: tenantMember.id,
+        tenantId: tenantMember.tenantId,
+        source: "quiz",
+        occurredAtUtc: new Date(),
+      }),
+    ]);
 
   return NextResponse.json(
     { message: "Quiz attempt submitted", score: scorePercentage },
@@ -99,6 +127,29 @@ export const GET = async (
     return NextResponse.json("unauthenticated", { status: 401 });
   }
 
+  const subdomain =
+    req.cookies.get("subdomain")?.value || extractSubdomain(req);
+
+  if (!subdomain) {
+    return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
+  }
+
+  const tenant = await getTenantBySubdomain(subdomain);
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+  }
+
+  let tenantMember;
+  try {
+    tenantMember = await getTenantMember(session.user.id, tenant.id);
+  } catch (err: any) {
+          return NextResponse.json(
+        { error: "Not a member of tenant" },
+        { status: 403 }
+      );
+  }
+
   const { quizId } = await params;
 
   const [attempt] = await db
@@ -107,7 +158,7 @@ export const GET = async (
     .where(
       and(
         eq(quizAttempts.quizId, quizId),
-        eq(quizAttempts.userId, session.user.id)
+        eq(quizAttempts.tenantMemberId, tenantMember.id)
       )
     );
 

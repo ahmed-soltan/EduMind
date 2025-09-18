@@ -6,9 +6,9 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 // Lazy load modals so they're not in first bundle
 const CreateDocumentModal = dynamic(
   () =>
-    import(
-      "@/features/ai-assistant/components/create-document-modal"
-    ).then((mod) => mod.CreateDocumentModal),
+    import("@/features/ai-assistant/components/create-document-modal").then(
+      (mod) => mod.CreateDocumentModal
+    ),
   { ssr: false }
 );
 
@@ -54,11 +54,36 @@ const CreateFlashCardModal = dynamic(
 
 const CreateAIGeneratedFlashCardModal = dynamic(
   () =>
-    import("@/features/flash-cards/components/create-ai-generated-flash-card-modal").then(
-      (mod) => mod.CreateAIGeneratedFlashCardModal
+    import(
+      "@/features/flash-cards/components/create-ai-generated-flash-card-modal"
+    ).then((mod) => mod.CreateAIGeneratedFlashCardModal),
+  { ssr: false }
+);
+
+const BillingModal = dynamic(
+  () =>
+    import("@/features/billing/components/billing-modal").then(
+      (mod) => mod.BillingModal
     ),
   { ssr: false }
 );
+
+const AccountModal = dynamic(
+  () =>
+    import("@/features/account/components/account-modal").then(
+      (mod) => mod.AccountModal
+    ),
+  { ssr: false }
+);
+
+const InviteModal = dynamic(
+  () =>
+    import("@/features/manage-members/components/invite-member-modal").then(
+      (mod) => mod.InviteMemberModal
+    ),
+  { ssr: false }
+);
+
 
 // Sidebar and header can be lazily loaded too if they're heavy
 const AppSidebar = dynamic(
@@ -99,6 +124,9 @@ export default function DashboardLayout({
       <UpdateFlashCardModal />
       <CreateFlashCardModal />
       <CreateAIGeneratedFlashCardModal />
+      <BillingModal />
+      <AccountModal />
+      <InviteModal />
 
       <AppSidebar variant="inset" />
 

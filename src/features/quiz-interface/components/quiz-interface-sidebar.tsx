@@ -11,14 +11,14 @@ export const QuizInterfaceSidebar = ({
     useQuiz();
 
   return (
-    <div className="flex flex-col items-start gap-4 border-r border-border h-full w-full">
+    <div className="flex flex-col items-start gap-4 border-r border-border h-full w-full p-2 ">
       <h1>Quiz Progress</h1>
-      <ul className="flex flex-col items-start justify-start gap-2 w-full pr-2">
+      <ul className="flex flex-col items-start justify-start gap-2 w-full pr-2 md:h-full h-[250px] overflow-y-auto">
         {Array.from({ length: quizQuestions.length }, (_, i) => (
           <li
             key={i}
             className={cn(
-              "flex items-center gap-2 group hover:bg-blue-500/20 w-full rounded-md cursor-pointer p-2",
+              "flex items-center flex-wrap gap-2 group hover:bg-blue-500/20 w-full rounded-md cursor-pointer p-2",
               {
                 "bg-blue-500/20":
                   currentQuestionId === quizQuestions[i].id ||

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useSendMessage = () => {
   return useMutation({
@@ -16,6 +17,9 @@ export const useSendMessage = () => {
       }
 
       return response.json();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
     },
   });
 };

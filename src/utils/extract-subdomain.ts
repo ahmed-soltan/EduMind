@@ -6,8 +6,6 @@ export function extractSubdomain(request: NextRequest): string | null {
   const host = request.headers.get("host") || "";
   const hostname = host.split(":")[0]; // strip port if exists
 
-  console.log("Hostname:", hostname);
-
   // Local development: support localhost, 127.0.0.1, and lvh.me
   if (
     hostname === "localhost" ||

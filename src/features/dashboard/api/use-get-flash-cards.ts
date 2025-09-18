@@ -4,7 +4,7 @@ export const useGetFlashCards = () =>{
     return useQuery({
         queryKey: ['flash-cards'],
         queryFn: async () => {
-            const response = await fetch('/api/users/flash-cards');
+            const response = await fetch('/api/dashboard/flashcards');
             if (!response.ok) {
                 throw new Error('Failed to fetch flash cards');
             }

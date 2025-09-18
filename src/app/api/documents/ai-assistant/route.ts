@@ -1,13 +1,17 @@
 import crypto from "crypto";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 
 import { db } from "@/db/conn";
-import { assistantMessages, userActivities } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
+import { extractSubdomain } from "@/utils/extract-subdomain";
+import { assistantMessages, userActivities } from "@/db/schema";
 import { searchChunks } from "@/features/ai-assistant/utils/search-chunks";
+
+import { getTenantMember } from "@/actions/get-tenant-member";
+import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
   model: "text-embedding-004",
@@ -26,6 +30,28 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const subdomain = extractSubdomain(req);
+
+  if (!subdomain) {
+    return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
+  }
+
+  const tenant = await getTenantBySubdomain(subdomain);
+
+  if (!tenant) {
+    return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+  }
+
+  let tenantMember;
+  try {
+    tenantMember = await getTenantMember(session.user.id, tenant.id);
+  } catch (err: any) {
+          return NextResponse.json(
+        { error: "Not a member of tenant" },
+        { status: 403 }
+      );
+  }
+
   const { documentId, message } = await req.json();
 
   if (!message?.trim()) {
@@ -36,7 +62,8 @@ export const POST = async (req: NextRequest) => {
   await db.insert(assistantMessages).values({
     id: crypto.randomUUID(),
     documentId,
-    userId: session.user.id,
+    tenantId: tenantMember.tenantId,
+    tenantMemberId: tenantMember.id,
     role: "user",
     message,
   });
@@ -63,7 +90,7 @@ export const POST = async (req: NextRequest) => {
 
   // retrieve similar chunks
   const relevantChunks = await searchChunks(queryEmbedding, documentId, 5);
-  const context = relevantChunks.map((c:any) => c.content).join("\n\n");
+  const context = relevantChunks.map((c: any) => c.content).join("\n\n");
 
   // prepare prompt
   const promptMessages = [
@@ -88,18 +115,20 @@ export const POST = async (req: NextRequest) => {
   await db.insert(assistantMessages).values({
     id: crypto.randomUUID(),
     documentId,
-    userId: session.user.id,
+    tenantId: tenantMember.tenantId,
+    tenantMemberId: tenantMember.id,
     role: "assistant",
     message: aiMessage,
   });
 
   await db.insert(userActivities).values({
     id: crypto.randomUUID(),
-    userId: session.user.id,
+    tenantId: tenantMember.tenantId,
+    tenantMemberId: tenantMember.id,
     activityType: "documents",
     activityDate: new Date(),
     activityTitle: `A Chat Message Sent`,
-    activityDescription: `You sent a chat message: ${message}`,
+    activityDescription: `${tenantMember.username} sent a chat message: ${message}`,
   });
 
   return NextResponse.json({ documentId, reply: aiMessage });

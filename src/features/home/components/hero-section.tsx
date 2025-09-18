@@ -1,12 +1,11 @@
 import React from "react";
 import Image from "next/image";
 
-import { UserButton } from "../../../components/user-button";
 import { Button } from "@/components/ui/button";
 import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
-import { Dialog, DialogContent, DialogTrigger } from "../../../components/ui/dialog";
 import { GetStartedButton } from "./get-started-button";
+import { Dialog, DialogContent, DialogTrigger } from "../../../components/ui/dialog";
 
 const transitionVariants = {
   item: {
@@ -204,7 +203,7 @@ export function HeroSection() {
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
                   <Image
                     className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                    src="/banner.png"
+                    src="/banner2.png"
                     alt="app screen"
                     width="2700"
                     height="1440"

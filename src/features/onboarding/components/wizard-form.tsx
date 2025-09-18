@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import z from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormBanner } from "@/components/form-banner";
 import {
   Form,
   FormControl,
@@ -19,19 +28,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { FileUpload } from "@/components/file-upload";
-import z from "zod";
+
 import { onboardingSchema } from "../types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Checkbox } from "@/components/ui/checkbox";
+import { cn, protocol, APP_DOMAIN } from "@/lib/utils";
+
 import { useOnboard } from "../api/use-onboard";
-import { FormBanner } from "@/components/form-banner";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const items = [
   {
@@ -64,15 +66,15 @@ const items = [
   },
 ] as const;
 
-export const WizardForm = () => {
+export const WizardForm = ({ tenantId }: { tenantId: string }) => {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const { data, isLoading } = useCurrentUser();
   const { mutateAsync, isPending, error } = useOnboard();
 
   const form = useForm<z.infer<typeof onboardingSchema>>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      name: "",
       nickName: "",
       bio: "",
       subdomain: "",
@@ -83,23 +85,19 @@ export const WizardForm = () => {
   });
   const totalSteps = 2;
 
-  useEffect(() => {
-    if (data) {
-      form.setValue("subdomain", data.firstName || "");
-    }
-  }, [data, form]);
-
-  if (isLoading) return null;
-
-  const { handleSubmit, control, reset } = form;
+  const { handleSubmit, control } = form;
 
   const onSubmit = async (data: z.infer<typeof onboardingSchema>) => {
     if (step === 0) return;
-    const { subdomain } = await mutateAsync(data);
+    const onboardingData = {
+      ...data,
+      tenantId,
+    };
+    const { subdomain } = await mutateAsync(onboardingData);
 
-    router.push(`/${subdomain.subdomain}/dashboard`);
+    router.push(`${protocol}://${subdomain}.${APP_DOMAIN}/dashboard`);
 
-    form.reset()
+    form.reset();
 
     toast.success("Form successfully submitted");
   };
@@ -153,6 +151,24 @@ export const WizardForm = () => {
             >
               {step === 0 && (
                 <div className="grid gap-y-4 w-full">
+                  <FormField
+                    control={control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tenant Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder=""
+                            autoComplete="off"
+                            disabled={isPending}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={control}
                     name="nickName"
@@ -354,11 +370,14 @@ export const WizardForm = () => {
 
                     <Button
                       size="sm"
-                      className="font-medium"
+                      className="font-medium flex items-center gap-1"
                       type="submit"
                       disabled={isPending}
                     >
-                      Submit
+                      {isPending && (
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                      )}
+                      {isPending ? "Creating Your Dashboard..." : "Submit"}
                     </Button>
                   </div>
                 </div>

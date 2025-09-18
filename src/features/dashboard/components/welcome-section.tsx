@@ -1,3 +1,4 @@
+import { getUserById } from "@/actions/get-user-by-id";
 import { getUserSession } from "@/utils/get-user-session";
 import { redirect } from "next/navigation";
 
@@ -8,7 +9,7 @@ export const WelcomeSection = async () => {
     redirect("/auth/login");
   }
 
-  const user = session.user;
+  const user = await getUserById(session.user.id);
   return (
     <div className="p-6 ">
       <h1 className="text-3xl font-medium inline">

@@ -1,12 +1,11 @@
 "use client";
 
+import { Settings } from "lucide-react";
 import {
   IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconUserCircle,
 } from "@tabler/icons-react";
-import { Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,19 +25,25 @@ import {
 } from "@/components/ui/sidebar";
 import { LogoutButton } from "@/features/auth/components/logout-button";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    firstName: string;
-    email: string;
-    avatar: string;
-    lastName: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
-  const avatarFallback = user.firstName.split("")[0].toUpperCase().concat(user.lastName.split("")[0].toUpperCase());
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useBillingModal } from "@/features/billing/hooks/use-billing-modal";
+import { useAccountModal } from "@/features/account/hooks/use-account-modal";
+import { useHasPermission } from "../api/use-has-permission";
 
+export function NavUser() {
+  const { isMobile } = useSidebar();
+  const { data: user, isLoading } = useCurrentUser();
+  const { openModal: openBillingModal } = useBillingModal();
+  const { openModal: openAccountModal } = useAccountModal();
+  const { data: hasPermission, isLoading: permissionLoading } =
+    useHasPermission("tenant:manage");
+
+  if (!user || isLoading || permissionLoading) return null;
+
+  const avatarFallback = user.firstName
+    .split("")[0]
+    .toUpperCase()
+    .concat(user.lastName.split("")[0].toUpperCase());
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -55,7 +60,9 @@ export function NavUser({
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.firstName} {user.lastName}</span>
+                <span className="truncate font-medium">
+                  {user.firstName} {user.lastName}
+                </span>
                 <span className="text-muted-foreground truncate text-xs">
                   {user.email}
                 </span>
@@ -73,10 +80,14 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.firstName} />
-                  <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {avatarFallback}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.firstName} {user.lastName}</span>
+                  <span className="truncate font-medium">
+                    {user.firstName} {user.lastName}
+                  </span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>
@@ -85,17 +96,15 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+              {hasPermission && (
+                <DropdownMenuItem onClick={openBillingModal}>
+                  <IconCreditCard />
+                  Billing & Usage
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={openAccountModal}>
                 <Settings />
-                Settings
+                Account & Profile
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

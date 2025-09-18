@@ -105,11 +105,6 @@ export function SectionCards() {
             >
               {quizzes.averageScore.toFixed(2)}%
             </span>{" "}
-            {quizzes.averageScore < 50 ? (
-              <IconTrendingDown className="size-4" />
-            ) : (
-              <IconTrendingUp className="size-4" />
-            )}
           </div>
           <div className="text-muted-foreground">
             Total Attempts: {quizzes.totalAttempts}

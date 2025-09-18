@@ -1,0 +1,2 @@
+ALTER TABLE "quizzes" ADD COLUMN "created_by" uuid;--> statement-breakpoint
+ALTER TABLE "quizzes" ADD CONSTRAINT "quizzes_created_by_tenant_members_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."tenant_members"("id") ON DELETE no action ON UPDATE no action;

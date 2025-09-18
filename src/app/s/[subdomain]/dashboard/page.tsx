@@ -10,11 +10,13 @@ export default async function DashboardPage() {
         <WelcomeSection />
         <div className="flex flex-col gap-4 md:gap-6">
           <SectionCards />
-          <div className="grid grid-cols-1 lg:grid-cols-3 px-4 lg:px-6 gap-4">
-            <div className="lg:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 px-4 lg:px-6 gap-5">
+            <div className="col-span-1 lg:col-span-2">
               <ActivitiesSection />
             </div>
+            <div className="col-span-1">
               <StreakTracker />
+            </div>
           </div>
           {/* <div className="px-4 lg:px-6">
             <ChartAreaInteractive />

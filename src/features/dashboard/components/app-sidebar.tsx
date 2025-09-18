@@ -1,28 +1,23 @@
-"use client";
-
 import * as React from "react";
+
 import {
   IconCamera,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
-  IconHelp,
   IconClipboardText,
-  IconReport,
-  IconSearch,
-  IconSettings,
   IconRobot,
   IconCards,
-  IconFile,
-  IconTrendingUp,
+  IconUsers,
+  IconActivity,
+  IconShield,
+  IconShieldLock,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "@/features/dashboard/components/nav-documents";
+import { Logo } from "@/components/logo";
 import { NavMain } from "@/features/dashboard/components/nav-main";
-import { NavSecondary } from "@/features/dashboard/components/nav-secondary";
 import { NavUser } from "@/features/dashboard/components/nav-user";
+import { NavDocuments } from "@/features/dashboard/components/nav-documents";
 import {
   Sidebar,
   SidebarContent,
@@ -32,8 +27,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { Logo } from "@/components/logo";
+
+import { useCanCreate } from "@/hooks/use-can-create-feature";
+import { useHasPermission } from "../api/use-has-permission";
 
 const data = {
   navMain: [
@@ -57,83 +53,77 @@ const data = {
       url: "decks",
       icon: IconCards,
     },
+  ],
+  navClouds: [
     {
-      title: "Notes",
-      url: "notes",
-      icon: IconFile,
+      title: "Capture",
+      icon: IconCamera,
+      isActive: true,
+      url: "#",
+      items: [
+        {
+          title: "Active Proposals",
+          url: "#",
+        },
+        {
+          title: "Archived",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Proposal",
+      icon: IconFileDescription,
+      url: "#",
+      items: [
+        {
+          title: "Active Proposals",
+          url: "#",
+        },
+        {
+          title: "Archived",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Prompts",
+      icon: IconFileAi,
+      url: "#",
+      items: [
+        {
+          title: "Active Proposals",
+          url: "#",
+        },
+        {
+          title: "Archived",
+          url: "#",
+        },
+      ],
     },
   ],
-  // navClouds: [
-  //   {
-  //     title: "Capture",
-  //     icon: IconCamera,
-  //     isActive: true,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Proposal",
-  //     icon: IconFileDescription,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Prompts",
-  //     icon: IconFileAi,
-  //     url: "#",
-  //     items: [
-  //       {
-  //         title: "Active Proposals",
-  //         url: "#",
-  //       },
-  //       {
-  //         title: "Archived",
-  //         url: "#",
-  //       },
-  //     ],
-  //   },
-  // ],
-  // documents: [
-  //   {
-  //     name: "Data Library",
-  //     url: "#",
-  //     icon: IconDatabase,
-  //   },
-  //   {
-  //     name: "Reports",
-  //     url: "#",
-  //     icon: IconReport,
-  //   },
-  //   {
-  //     name: "Word Assistant",
-  //     url: "#",
-  //     icon: IconFileWord,
-  //   },
-  // ],
+  members: [
+    {
+      title: "Members Management",
+      url: "manage-members",
+      icon: IconUsers,
+    },
+    {
+      title: "Roles & Permissions",
+      url: "roles-and-permissions",
+      icon: IconShieldLock,
+    },
+  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: userData } = useCurrentUser();
-  if (!userData) return null;
+  const { data: canCreateFeature, isLoading: isLoadingCanCreateFeature } = useCanCreate("teams");
+  const {data: hasPermission, isLoading: permissionLoading} = useHasPermission("members:manage");
 
+  const isLoading = isLoadingCanCreateFeature || permissionLoading;
+
+  if (isLoading) return null;
+  
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -150,11 +140,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/*<NavDocuments items={data.documents} />*/}
+        {canCreateFeature.teams.canCreate && hasPermission && (
+          <NavDocuments items={data.members} />
+        )}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={userData} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

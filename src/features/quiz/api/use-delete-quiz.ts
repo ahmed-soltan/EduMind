@@ -3,6 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useDeleteQuiz = () => {
   const queryClient = useQueryClient();
@@ -21,6 +22,10 @@ export const useDeleteQuiz = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+      queryClient.invalidateQueries({ queryKey: ["can-create", "quizzes"] });
     },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
+    }
   });
 };

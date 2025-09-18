@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
-import { SignJWT } from "jose";
-import { cookies } from "next/headers";
-import { db } from "@/db/conn";
-import { settings, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { SignJWT } from "jose";
+import { eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+
+import { db } from "@/db/conn";
+import { users } from "@/db/schema";
 import { rootDomain } from "@/lib/utils";
+
 
 export const POST = async (req: NextRequest) => {
   const { email, password, firstName, lastName } = (await req.json()) as {
@@ -45,7 +46,6 @@ export const POST = async (req: NextRequest) => {
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,
-        avatar: users.avatar,
         hasOnboarded: users.hasOnboarded,
       });
     user = newUser;
@@ -57,22 +57,12 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const [userSettings] = await db
-    .select({ subdomain: settings.subdomain })
-    .from(settings)
-    .where(eq(settings.userId, user.id));
-
   const accessSecret = new TextEncoder().encode(process.env.ACCESS_SECRET!);
   const refreshSecret = new TextEncoder().encode(process.env.REFRESH_SECRET!);
 
   const accessToken = await new SignJWT({
     user: {
       id: user.id,
-      email: user.email,
-      subdomain: userSettings.subdomain,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
     },
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -83,11 +73,6 @@ export const POST = async (req: NextRequest) => {
   const refreshToken = await new SignJWT({
     user: {
       id: user.id,
-      email: user.email,
-      subdomain: userSettings.subdomain,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
     },
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -110,5 +95,6 @@ export const POST = async (req: NextRequest) => {
     domain: `.${rootDomain}`,
     path: "/",
   });
+
   return res;
 };

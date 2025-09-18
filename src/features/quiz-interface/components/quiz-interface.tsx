@@ -23,11 +23,10 @@ import { Attempt, QuizInterface as QuizInterfaceT } from "@/db/types";
 interface QuizInterfaceProps {
   quiz: QuizInterfaceT;
   attempt: Attempt | null; // null if in solving mode
-  subdomain: string | null;
 }
 
 export const QuizInterface = React.memo(
-  ({ quiz, attempt, subdomain }: QuizInterfaceProps) => {
+  ({ quiz, attempt }: QuizInterfaceProps) => {
     const { answeredQuestions, addAnsweredQuestion, resetQuiz } = useQuiz();
 
     const {
@@ -71,6 +70,7 @@ export const QuizInterface = React.memo(
 
       await mutateAsync({ answers: answeredQuestions });
       localStorage.removeItem(`quiz-counter-${quiz.quiz.id}`);
+      router.refresh()
       router.push(`${quiz.quiz.id}/result`);
       resetQuiz();
     };
@@ -78,12 +78,12 @@ export const QuizInterface = React.memo(
     return (
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         {/* Sidebar with question navigation */}
-        <div className="col-span-1 border-r">
+        <div className="col-span-2 border-r">
           <QuizInterfaceSidebar quizQuestions={quiz.questions} />
         </div>
 
         {/* Main content */}
-        <div className="col-span-1 md:col-span-5 p-4">
+        <div className="col-span-1 md:col-span-4 p-4">
           {currentQuestion ? (
             <Card className="shadow-lg">
               <CardHeader>

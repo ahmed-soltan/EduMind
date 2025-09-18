@@ -44,7 +44,7 @@ export const CreateAIGeneratedFlashCardForm = ({
     data: z.infer<typeof CreateAIGeneratedFlashCardSchema>
   ) => {
     await mutateAsync({numFlashCards: data.numFlashCards[0]});
-
+    
     onCancel?.();
   };
 

@@ -1,135 +1,191 @@
-// middleware.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { protocol, rootDomain } from "@/lib/utils"; // make sure this returns e.g. "example.com"
+import { APP_DOMAIN, APP_ORIGIN, AUTH_ORIGIN, buildRootLoginUrl, protocol, rootDomain } from "@/lib/utils"; // e.g. "lvh.me" or "example.com"
 import { extractSubdomain } from "./utils/extract-subdomain";
 import { jwtVerify } from "jose";
 
 const ACCESS_SECRET = new TextEncoder().encode(process.env.ACCESS_SECRET!);
 
-function buildRootLoginUrl(): string {
-  const loginUrl = `${protocol}://${rootDomain}/auth/login`;
+/**
+ * Try to validate the access token; if invalid, call existing refresh endpoint.
+ * Returns { payload, tokens? } or null.
+ * - payload: token payload (object)
+ * - tokens: { accessToken, refreshToken } when refresh succeeded
+ */
+async function verifyOrRefresh(request: NextRequest) {
+  const access = request.cookies.get("accessToken")?.value;
 
-  return loginUrl;
+  // 1) if access token exists, try to verify it.
+  if (access) {
+    try {
+      const verified = await jwtVerify(access, ACCESS_SECRET);
+      const payload = (verified as any).payload;
+
+      // if token doesn't carry a user object, treat as invalid and try refresh
+      if (!payload?.user) {
+        throw new Error("access token missing user");
+      }
+
+      return { payload }; // good access token, no new tokens
+    } catch {
+      // continue to refresh attempt
+    }
+  }
+
+  // 2) attempt refresh via your existing refresh endpoint
+  try {
+    const refreshUrl = `${AUTH_ORIGIN.replace(/\/$/, "")}/api/auth/refresh`;
+    const refreshRes = await fetch(refreshUrl, {
+      method: "POST",
+      // forward cookies from incoming request so server can read refresh token cookie
+      headers: { cookie: request.headers.get("cookie") ?? "" },
+    });
+
+    if (!refreshRes.ok) return null;
+
+    // your refresh endpoint returns JSON with tokens (your existing implementation)
+    const body = await refreshRes.json();
+    const newAccessToken: string | undefined = body?.accessToken;
+    const newRefreshToken: string | undefined = body?.refreshToken;
+    if (!newAccessToken) return null;
+
+    // verify returned new access token to extract payload
+    const verifiedNew = await jwtVerify(newAccessToken, ACCESS_SECRET);
+    const payload = (verifiedNew as any).payload;
+
+    // require payload.user to exist; if not, treat as fail
+    if (!payload?.user) return null;
+
+    return {
+      payload,
+      tokens: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+    };
+  } catch {
+    return null;
+  }
+}
+
+// helper: decide cookie options and attach cookies to the provided response
+function setAuthCookies(
+  response: NextResponse,
+  tokens: { accessToken?: string; refreshToken?: string } | undefined,
+  request: NextRequest
+) {
+  if (!tokens) return;
+
+  const host = request.headers.get("host") ?? request.nextUrl.hostname;
+  const isLocal = /^localhost(:\d+)?$/.test(host) || host.startsWith("127.") || host === "::1";
+
+  const cookieOptions: Record<string, any> = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  };
+
+  // only set domain in non-local environments and when rootDomain is available
+  if (!isLocal && rootDomain) {
+    cookieOptions.domain = `.${rootDomain}`;
+  }
+
+  if (tokens.accessToken) {
+    response.cookies.set("accessToken", tokens.accessToken, cookieOptions);
+  }
+  if (tokens.refreshToken) {
+    response.cookies.set("refreshToken", tokens.refreshToken, cookieOptions);
+  }
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  const tenantRoutes = ["/dashboard"];
-  const isTenantRoute = tenantRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
+  const tenantRoutes = ["/dashboard"]; // extend as needed
+  const isTenantRoute = tenantRoutes.some((route) => pathname.startsWith(route));
 
+  // special-case: auth pages
   if (pathname.startsWith("/auth")) {
+    const verified = await verifyOrRefresh(request);
+
+    // if logged in (or refresh succeeded) -> redirect away from /auth pages
+    if (verified?.payload) {
+      // prefer tenant subdomain in token if present
+
+      const subdomain = request.cookies.get("subdomain")?.value;
+      const redirectTarget = subdomain
+        ? `${protocol}://${subdomain}.${APP_DOMAIN}/dashboard`
+        : `${APP_ORIGIN}/`;
+
+      const redirectRes = NextResponse.redirect(redirectTarget);
+
+      // attach refreshed cookies if refresh returned tokens (on the response we will return)
+      setAuthCookies(redirectRes, verified.tokens, request);
+
+      // include x-user-id header for downstream servers if available
+      if (verified.payload?.user?.userId) {
+        redirectRes.headers.set("x-user-id", String(verified.payload.user.userId));
+      }
+
+      return redirectRes;
+    }
+
+    // not authenticated -> let /auth pages render
     return NextResponse.next();
   }
-  // Authentication cookie handling (token verification / refresh)
-  const access = request.cookies.get("accessToken")?.value;
-  // If no access token, allow page to handle login / redirect
 
-  if (!access && isTenantRoute) {
+  // For other routes: verify or refresh
+  const result = await verifyOrRefresh(request);
+
+  // If this route requires tenant auth and verify/refresh failed -> redirect to central login
+  if (!result && isTenantRoute) {
     return NextResponse.redirect(buildRootLoginUrl());
   }
 
-  if(!access){
-    return NextResponse.next();
-  }
-
-  let payload: any = null;
-  let refreshed = false;
-  let newAccessToken: string | undefined;
-  let newRefreshToken: string | undefined;
-
-  try {
-    const verified = await jwtVerify(access, ACCESS_SECRET);
-    payload = (verified as any).payload;
-    // If you use some payload shape, check accordingly. If invalid, attempt refresh below.
-    if (!payload?.user) {
-      // fallthrough to refresh logic (same as below)
-      throw new Error("no user in payload");
-    }
-  } catch (err: any) {
-    // Try to refresh when token invalid/expired
-    try {
-      const refreshUrl = new URL("/api/auth/refresh", request.url).toString();
-      const refreshRes = await fetch(refreshUrl, {
-        method: "POST",
-        // forward cookies to refresh endpoint (it must read refreshToken cookie)
-        headers: { cookie: request.headers.get("cookie") ?? "" },
-      });
-
-      if (!refreshRes.ok) {
-        // refresh failed => redirect to login (on the current host)
-        console.log("first")
-        return NextResponse.redirect(buildRootLoginUrl());
-      }
-
-      const body = await refreshRes.json();
-      newAccessToken = body?.accessToken;
-      newRefreshToken = body?.refreshToken;
-
-      if (newAccessToken) {
-        const verifiedNew = await jwtVerify(newAccessToken, ACCESS_SECRET);
-        payload = (verifiedNew as any).payload;
-        refreshed = true;
-      } else {
-        return NextResponse.redirect(buildRootLoginUrl());
-      }
-    } catch (refreshErr) {
-      return NextResponse.redirect(buildRootLoginUrl());
-    }
-  }
-
-  // continue the request, attach refreshed cookies if we got new tokens
+  // Build response (default) — we will set cookies on whichever response we return
   const res = NextResponse.next();
 
-  if (refreshed && newAccessToken) {
-    res.cookies.set("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
-      path: "/",
-      domain: `.${rootDomain}`,
-    });
+  // If we have refreshed tokens, attach them to the response we'll return
+  setAuthCookies(res, result?.tokens, request);
 
-    if (newRefreshToken) {
-      res.cookies.set("refreshToken", newRefreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax",
-        path: "/",
-        domain: `.${rootDomain}`,
-      });
-    }
-  }
+  // now extract payload from result for tenant handling
+  const payload = result?.payload ?? null;
 
+  // Tenant route handling:
+  // - If subdomain present in host and route is tenant-route, require payload (authenticated)
+  // - If payload includes user.subdomain, enforce it matches host subdomain
   const subdomain = extractSubdomain(request);
 
-
-  // If this is a subdomain, rewrite routes to your /s/[subdomain] routes
-  console.log(subdomain);
   if (subdomain && isTenantRoute) {
-    if (subdomain !== payload?.user?.subdomain) {
-      return NextResponse.redirect(`${protocol}://${rootDomain}`);
-    }
-    // protect admin from subdomains
-    if (pathname.startsWith("/admin")) {
-      return NextResponse.redirect(new URL("/", request.url));
+    if (!payload) {
+      // not authenticated
+      return NextResponse.redirect(buildRootLoginUrl());
     }
 
-    if (
-      pathname === "/" ||
-      pathname === "/dashboard" ||
-      pathname.startsWith("/dashboard/")
-    ) {
+    const userSubdomain = request.cookies.get("subdomain")?.value;
+
+    // If the token contains a subdomain claim, enforce it
+    if (subdomain) {
+      if (userSubdomain !== subdomain) {
+        // user belongs to different tenant; send them to root dashboard
+        return NextResponse.redirect(`${APP_ORIGIN}`);
+      }
+    }
+
+    // Continue and rewrite to tenant route
+    if (pathname === "/" || pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
       const dest = `/s/${subdomain}${pathname === "/" ? "" : pathname}`;
-      return NextResponse.rewrite(new URL(dest, request.url));
-    }
+      const rewriteRes = NextResponse.rewrite(new URL(dest, request.url));
 
-    // if you have many tenant routes, you can rewrite more broadly:
-    // if (pathname.startsWith("/(app|settings|courses)")) { ... }
+      // IMPORTANT: set cookies on the rewriteRes (the response we'll return)
+      setAuthCookies(rewriteRes, result?.tokens, request);
+
+      // preserve x-user-subdomain header
+      if (subdomain) {
+        rewriteRes.headers.set("x-user-subdomain", String(subdomain));
+      }
+
+      return rewriteRes;
+    }
   }
 
+  // default: return the response that already has cookies attached (if any)
   return res;
 }
 

@@ -7,6 +7,7 @@ type LoginPayload = {
 
 type LoginResponse = {
 	accessToken?: string;
+	lastActiveTenantSubdomain?: string | null;
 	error?: string;
 };
 

@@ -7,7 +7,7 @@ export const GET = async (req: NextRequest) => {
 
   const planWithAnnualPrice = plansInfo.map(plan => ({
     ...plan,
-    annualPrice: plan.price * 12 * (1 - (plan.annual_discount_percent || 0) / 100)
+    annualPrice: plan.cents * 12 * (1 - (plan.annual_discount_percent) / 100)
   }));
 
   return NextResponse.json({ plans: planWithAnnualPrice });
