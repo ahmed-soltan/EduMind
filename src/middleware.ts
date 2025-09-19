@@ -3,7 +3,26 @@ import { APP_DOMAIN, APP_ORIGIN, AUTH_ORIGIN, buildRootLoginUrl, protocol, rootD
 import { extractSubdomain } from "./utils/extract-subdomain";
 import { jwtVerify } from "jose";
 
-const ACCESS_SECRET = new TextEncoder().encode(process.env.ACCESS_SECRET!);
+/**
+ * SAFETY: do NOT assume ACCESS_SECRET exists at runtime.
+ * If it's missing, jwtVerify will throw — so we guard it.
+ */
+const ACCESS_SECRET_RAW = process.env.ACCESS_SECRET;
+const ACCESS_SECRET = ACCESS_SECRET_RAW ? new TextEncoder().encode(ACCESS_SECRET_RAW) : null;
+
+/**
+ * fetchWithTimeout - small helper that aborts the fetch after `ms` milliseconds
+ */
+async function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 2000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: controller.signal, ...opts });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 /**
  * Try to validate the access token; if invalid, call existing refresh endpoint.
@@ -14,8 +33,8 @@ const ACCESS_SECRET = new TextEncoder().encode(process.env.ACCESS_SECRET!);
 async function verifyOrRefresh(request: NextRequest) {
   const access = request.cookies.get("accessToken")?.value;
 
-  // 1) if access token exists, try to verify it.
-  if (access) {
+  // 1) if access token exists, try to verify it (only if we have a secret).
+  if (access && ACCESS_SECRET) {
     try {
       const verified = await jwtVerify(access, ACCESS_SECRET);
       const payload = (verified as any).payload;
@@ -34,13 +53,15 @@ async function verifyOrRefresh(request: NextRequest) {
   // 2) attempt refresh via your existing refresh endpoint
   try {
     const refreshUrl = `${AUTH_ORIGIN.replace(/\/$/, "")}/api/auth/refresh`;
-    const refreshRes = await fetch(refreshUrl, {
+
+    // use timeout so refresh doesn't block middleware for too long
+    const refreshRes = await fetchWithTimeout(refreshUrl, {
       method: "POST",
       // forward cookies from incoming request so server can read refresh token cookie
       headers: { cookie: request.headers.get("cookie") ?? "" },
-    });
+    }, 2000); // 2s timeout (adjust if necessary)
 
-    if (!refreshRes.ok) return null;
+    if (!refreshRes || !refreshRes.ok) return null;
 
     // your refresh endpoint returns JSON with tokens (your existing implementation)
     const body = await refreshRes.json();
@@ -48,15 +69,28 @@ async function verifyOrRefresh(request: NextRequest) {
     const newRefreshToken: string | undefined = body?.refreshToken;
     if (!newAccessToken) return null;
 
-    // verify returned new access token to extract payload
-    const verifiedNew = await jwtVerify(newAccessToken, ACCESS_SECRET);
-    const payload = (verifiedNew as any).payload;
+    // verify returned new access token to extract payload only if we have a secret
+    if (ACCESS_SECRET) {
+      try {
+        const verifiedNew = await jwtVerify(newAccessToken, ACCESS_SECRET);
+        const payload = (verifiedNew as any).payload;
 
-    // require payload.user to exist; if not, treat as fail
-    if (!payload?.user) return null;
+        // require payload.user to exist; if not, treat as fail
+        if (!payload?.user) return null;
 
+        return {
+          payload,
+          tokens: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    // If we don't have ACCESS_SECRET we can't verify the token locally.
+    // Return tokens (so we can set cookies) but no payload — middleware will treat as unauthenticated.
     return {
-      payload,
+      payload: null,
       tokens: { accessToken: newAccessToken, refreshToken: newRefreshToken },
     };
   } catch {

@@ -1,19 +1,19 @@
-import { db } from "@/db/conn";
-import { tenantMembers, tenantRoles, users, tenants, pendingInvitations } from "@/db/schema";
-import { getUserSession } from "@/utils/get-user-session";
-import { hasPermission } from "@/utils/has-permission";
+import crypto from "crypto";
+import { Resend } from "resend";
 import { eq, and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+
+import { db } from "@/db/conn";
+import { hasPermission } from "@/utils/has-permission";
+import { getUserSession } from "@/utils/get-user-session";
 import { extractSubdomain } from "@/utils/extract-subdomain";
 import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 import { getTenantMember } from "@/actions/get-tenant-member";
-import { Resend } from "resend";
 import {
   InviteMemberEmailTemplate,
   generateInviteEmailText,
 } from "@/lib/email-utils";
-import { APP_DOMAIN, protocol, rootDomain } from "@/lib/utils";
+import { tenantMembers, tenantRoles, users, pendingInvitations } from "@/db/schema";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

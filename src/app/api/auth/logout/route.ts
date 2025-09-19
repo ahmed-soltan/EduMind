@@ -19,5 +19,13 @@ export const POST = async (req: NextRequest) => {
     expires: new Date(0),
     domain:`.${rootDomain}`,
   });
+  res.cookies.set("subdomain", "", {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    path: "/",
+    expires: new Date(0),
+    domain:`.${rootDomain}`,
+  })
   return res;
 };

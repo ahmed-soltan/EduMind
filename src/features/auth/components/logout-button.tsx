@@ -11,8 +11,7 @@ export const LogoutButton = ({ ...props }) => {
   return (
     <UserButton onClick={()=>{
       logout()
-      window.location.reload()
-    }} {...props} href={"/"}>
+    }} {...props} href={"#"}>
       Logout
     </UserButton>
   );
