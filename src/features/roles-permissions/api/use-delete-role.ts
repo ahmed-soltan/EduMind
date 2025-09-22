@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useDeleteRole = () => {
@@ -5,17 +6,17 @@ export const useDeleteRole = () => {
 
   return useMutation({
     mutationFn: async (roleId: string) => {
-      const res = await fetch(`/api/roles/${roleId}`, {
+      const res = await apiClient(`/api/roles/${roleId}`, {
         method: "DELETE",
-        credentials: "include",
+        withCredentials: true,
       });
 
-      if (!res.ok) {
-        const error = await res.json();
+      if (res.status !== 200) {
+        const error = await res.data;
         throw new Error(error.error || "Failed to delete role");
       }
 
-      return res.json();
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });

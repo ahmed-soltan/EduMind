@@ -20,7 +20,7 @@ export const QuizPageHeader = () => {
     useHasPermission("quiz:create");
   const router = useRouter();
 
-  const hasReachedLimit = !canCreateQuizzes?.quizzes.canCreate;
+  const hasReachedLimit = !canCreateQuizzes?.canCreate;
   const isLoading = isQuizzesLoading || isPermissionLoading;
 
   return (

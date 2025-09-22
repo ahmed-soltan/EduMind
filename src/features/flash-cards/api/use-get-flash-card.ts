@@ -1,4 +1,5 @@
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetFlashCard = (flashcardId: string) => {
@@ -7,13 +8,10 @@ export const useGetFlashCard = (flashcardId: string) => {
     queryKey: ["flashcard", flashcardId],
     enabled: !!flashcardId && !!deckId,
     queryFn: async () => {
-      const response = await fetch(
+      const response = await apiClient(
         `/api/decks/${deckId}/flash-cards/${flashcardId}`
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch flashcards");
-      }
-      return response.json();
+      return response.data;
     },
   });
 };

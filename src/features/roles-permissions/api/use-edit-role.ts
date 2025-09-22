@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface CreateRoleData {
@@ -11,21 +12,21 @@ export const useCreateRole = () => {
 
   return useMutation({
     mutationFn: async (data: CreateRoleData) => {
-      const res = await fetch("/api/roles", {
+      const res = await apiClient("/api/roles", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(data),
+        withCredentials: true,
+        data: JSON.stringify(data),
       });
 
-      if (!res.ok) {
-        const error = await res.json();
+      if (res.status !== 200) {
+        const error = await res.data;
         throw new Error(error.message || "Failed to create role");
       }
 
-      return res.json();
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });

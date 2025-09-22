@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 
 type SignupPayload = {
@@ -13,15 +14,15 @@ type SignupResponse = {
 };
 
 async function signup(payload: SignupPayload): Promise<SignupResponse> {
-	const res = await fetch("/api/auth/signup", {
+	const res = await apiClient("/api/auth/signup", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(payload),
-		credentials: "include", // ensure cookies are set
+		data: JSON.stringify(payload),
+		withCredentials: true, // ensure cookies are set
 	});
-	return res.json();
+	return res.data;
 }
 
 export function useSignup() {

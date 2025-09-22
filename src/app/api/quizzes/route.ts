@@ -32,9 +32,8 @@ export const GET = async (req: NextRequest) => {
   if (!session.isAuthenticated) {
     return NextResponse.json("Unauthorized", { status: 401 });
   }
-
+  
   const subdomain = extractSubdomain(req);
-
   if (!subdomain) {
     return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
   }

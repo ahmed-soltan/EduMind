@@ -4,6 +4,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import apiClient from "@/lib/api";
 
 type RequestType = {
   topic: string;
@@ -16,21 +17,20 @@ export const useGenerateQuiz = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: RequestType) => {
-      const response = await fetch("/api/quizzes", {
+      const response = await apiClient("/api/quizzes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json", // ✅ tell server it’s JSON
         },
-        body: JSON.stringify(data), // ✅ convert to valid JSON string
+        data: JSON.stringify(data), // ✅ convert to valid JSON string
       });
 
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
+      if (response.status !== 200) {
+        const errorBody = await response.data.catch(() => null);
         throw new Error(errorBody?.error || "Something went wrong");
       }
 
-      const result = await response.json();
-      return result;
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quizzes"] });

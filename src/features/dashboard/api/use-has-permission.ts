@@ -1,23 +1,28 @@
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 
 export const useHasPermission = (permission: string) => {
   const router = useRouter();
-  return useQuery({
+
+  return useQuery<boolean, AxiosError>({
     queryKey: ["hasPermission", permission],
     queryFn: async () => {
-      const response = await fetch(
-        `/api/permissions/has?permission=${permission}`
-      );
-      if (!response.ok) {
-        const error = await response.json();
-        console.log(error)
-        if (error.error === "Not a member of tenant") {
+      try {
+        const response = await apiClient.get<{ hasPermission: boolean }>(
+          `/api/permissions/has?permission=${permission}`
+        );
+        return response.data.hasPermission;
+      } catch (err) {
+        const error = err as AxiosError<{ error?: string }>;
+
+        if (error.response?.data?.error === "Not a member of tenant") {
           router.push("/");
         }
+
+        throw error;
       }
-      const data = await response.json();
-      return data.hasPermission;
     },
   });
 };

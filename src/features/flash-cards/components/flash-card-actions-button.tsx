@@ -20,7 +20,7 @@ export const FlashCardActionButtons = () => {
   const { data: flashCardLimits } = useCanCreate("flashcards");
   const { data: hasPermission, isLoading } = useHasPermission("flashcard:create");
 
-  const canCreateFlashCard = flashCardLimits?.flashcards.canCreate ?? true;
+  const canCreateFlashCard = flashCardLimits?.canCreate ?? true;
 
   return (
     <>

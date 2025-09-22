@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation } from "@tanstack/react-query";
 
 type RequestT = {
@@ -13,20 +14,19 @@ type ResponseT = {
 export const useSubscribe = () => {
   return useMutation<ResponseT, Error, RequestT>({
     mutationFn: async (data) => {
-      const res = await fetch("/api/subscriptions", {
+      const res = await apiClient("/api/subscriptions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
       });
 
-      if (!res.ok) {
+      if (res.status !== 200) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      const result = await res.json();
-      return result as ResponseT;
+      return res.data as ResponseT;
     },
   });
 };

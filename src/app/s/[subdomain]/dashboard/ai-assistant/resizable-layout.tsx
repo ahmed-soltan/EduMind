@@ -25,7 +25,7 @@ const ResizableLayout = ({ children }: { children: React.ReactNode }) => {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50}>
-          <div className="flex h-full items-center justify-center w-full">
+          <div className="flex h-[95vh] items-center justify-center w-full">
             <ChatWidget />
           </div>
         </ResizablePanel>

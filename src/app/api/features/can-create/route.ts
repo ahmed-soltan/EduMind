@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const feature = searchParams.get("feature");
+
   if (!feature) {
     return NextResponse.json({ error: "Missing feature" }, { status: 400 });
   }

@@ -121,8 +121,16 @@ export const POST = async (req: NextRequest) => {
   }
 
   let tenantId = body.tenantId;
+  const [existingTenant] = await db
+    .select({ id: tenants.id })
+    .from(tenants)
+    .where(eq(tenants.ownerId, session.user.id));
 
-  if (!tenantId) {
+  if (existingTenant) {
+    tenantId = existingTenant.id;
+  }
+
+  if (!tenantId || !existingTenant) {
     const [tenant] = await db
       .insert(tenants)
       .values({
@@ -278,6 +286,9 @@ export const GET = async (req: NextRequest) => {
     )
     .orderBy(subscriptions.startDate)
     .limit(1);
+
+
+    console.log({subscription})
 
   return NextResponse.json(subscription);
 };

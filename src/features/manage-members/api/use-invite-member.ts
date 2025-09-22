@@ -1,4 +1,6 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface InviteMemberData {
   email: string;
@@ -10,24 +12,27 @@ export const useInviteMember = () => {
 
   return useMutation({
     mutationFn: async (data: InviteMemberData) => {
-      const res = await fetch("/api/members/invite", {
+      const res = await apiClient("/api/members/invite", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
       });
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to invite member");
+      if (res.status !== 200) {
+        const error = await res.data;
+        throw new Error(error || "Failed to invite member");
       }
 
-      return res.json();
+      return res.data;
     },
     onSuccess: () => {
       // Invalidate and refetch members list
       queryClient.invalidateQueries({ queryKey: ["members"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response.data.error);
     },
   });
 };

@@ -1,23 +1,24 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useQuizAttempt = (quizId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch(
+      const response = await apiClient(
         `/api/quizzes/${quizId}/quiz-attempts`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          data: JSON.stringify(data),
         }
       );
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to submit quiz attempt");
       }
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quizzes"] });

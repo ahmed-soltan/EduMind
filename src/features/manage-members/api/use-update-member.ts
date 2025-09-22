@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -11,21 +12,21 @@ export const useUpdateMember = () => {
 
   return useMutation({
     mutationFn: async ({ memberId, data }: { memberId: string; data: UpdateMemberData }) => {
-      const res = await fetch(`/api/members/${memberId}`, {
+      const res = await apiClient(`/api/members/${memberId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(data),
+        withCredentials: true,
+        data: JSON.stringify(data),
       });
-      
-      if (!res.ok) {
-        const errorData = await res.json();
+
+      if (res.status !== 200) {
+        const errorData = await res.data;
         throw new Error(errorData.error || "Failed to update member");
       }
-      
-      return res.json();
+
+      return res.data;
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["members"] });

@@ -64,12 +64,10 @@ export const InviteMemberForm = ({ onCancel }: InviteMemberFormProps) => {
         form.reset();
         close();
       },
-      onError: (error: any) => {
-        toast.error(error.message || "Failed to send invitation");
-      },
     });
     onCancel();
   };
+  
   return (
     <Card className="border-neutral-500">
       <CardHeader>
@@ -166,7 +164,7 @@ export const InviteMemberForm = ({ onCancel }: InviteMemberFormProps) => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={close}
+                onClick={()=>onCancel()}
                 disabled={isPending}
                 className="w-full sm:w-auto"
               >

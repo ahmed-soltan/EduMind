@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import {
   QueryClient,
   useMutation,
@@ -9,15 +10,15 @@ export const useDeleteQuiz = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (quizId: string) => {
-      const response = await fetch(`/api/quizzes/${quizId}`, {
+      const response = await apiClient(`/api/quizzes/${quizId}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to delete quiz");
       }
 
-      const result = await response.json();
+      const result = await response.data;
       return result;
     },
     onSuccess: () => {

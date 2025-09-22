@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import z from "zod";
 import { onboardingSchema } from "../types";
+import apiClient from "@/lib/api";
 
 export const useOnboard = () => {
   return useMutation({
@@ -12,20 +13,20 @@ export const useOnboard = () => {
         subdomain: string;
       };
     }> => {
-      const response = await fetch("/api/onboarding", {
+      const response = await apiClient("/api/onboarding", {
         method: "POST",
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
       });
-      const result = (await response.json()) as {
+      const result = (await response.data) as {
         message: string;
         subdomain: {
           subdomain: string;
         };
       };
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(result.message || "Failed to log in");
       }
       return result;

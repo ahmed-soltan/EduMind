@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, UserPlus, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { APP_DOMAIN, protocol } from "@/lib/utils";
+import apiClient from "@/lib/api";
 
 interface InvitationData {
   token: string;
@@ -49,12 +50,11 @@ export const InvitationCard = () => {
 
   const validateInvitation = async () => {
     try {
-      const response = await fetch(
+      const response = await apiClient(
         `/api/invitations/validate?token=${token}&tenant=${tenant}`
       );
-      const data = await response.json();
-
-      if (response.ok) {
+      const data = await response.data
+      if (response.status === 200) {
         setInvitation(data);
       } else {
         toast.error(data.error || "Invalid invitation");
@@ -72,17 +72,17 @@ export const InvitationCard = () => {
 
     setAccepting(true);
     try {
-      const response = await fetch("/api/invitations/accept", {
+      const response = await apiClient("/api/invitations/accept", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token, subdomain: tenant }),
+        data: JSON.stringify({ token, subdomain: tenant }),
       });
 
-      const data = await response.json();
+      const data = await response.data;
 
-      if (response.ok) {
+      if (response.status === 200) {
         toast.success("Invitation accepted successfully!");
         router.push(
           `${protocol}://${invitation.subdomain}.${APP_DOMAIN}/dashboard`

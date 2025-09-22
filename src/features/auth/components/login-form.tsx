@@ -39,16 +39,45 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    const { accessToken, lastActiveTenantSubdomain } = await mutateAsync(data);
-    if (error) return;
-    if (accessToken) {
-      localStorage.setItem("accessToken", accessToken!);
-    }
-    router.refresh();
-    if (lastActiveTenantSubdomain) {
-      window.location.href = `${protocol}://${lastActiveTenantSubdomain}.${APP_DOMAIN}/dashboard`;
-    } else {
+    try {
+      // mutateAsync will throw on network/validation errors — so wrap in try/catch
+      const result = await mutateAsync(data);
+
+      // result should be the server response shape
+      console.log("login result:", result);
+
+      const accessToken = result?.accessToken;
+      const lastActiveTenantSubdomain = result?.lastActiveTenantSubdomain;
+
+      // If backend returns accessToken but you rely on httpOnly cookies, you can skip saving it to localStorage.
+      // If you *do* need it client-side, set it here (but prefer httpOnly cookies)
+      if (accessToken) {
+        // optional: localStorage.setItem("accessToken", accessToken);
+        // but prefer httpOnly cookies set by the server
+        console.debug("Access token received");
+      }
+
+      if (callbackUrl === "/invite") {
+        router.push(callbackUrl);
+      }
+
+      // If we have a tenant subdomain we prefer redirecting to it.
+      if (lastActiveTenantSubdomain) {
+        const target = `${protocol}://${lastActiveTenantSubdomain}.${APP_DOMAIN}/dashboard`;
+        console.log("Redirecting to tenant dashboard:", target);
+
+        // Use assign for a full navigation (works cross-subdomain)
+        window.location.assign(target);
+        return;
+      }
+
+      // Default: go to callbackUrl
+      console.log("Redirecting to callbackUrl:", callbackUrl);
       router.push(callbackUrl);
+    } catch (err: any) {
+      // mutateAsync threw — show error (you already show FormBanner via error state)
+      console.error("Login failed:", err);
+      // optionally show toast or set local error state
     }
   };
 

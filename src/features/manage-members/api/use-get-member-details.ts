@@ -1,5 +1,6 @@
 "use client";
 
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface MemberDetails {
@@ -72,14 +73,14 @@ export const useGetMemberDetails = (memberId: string) => {
   return useQuery<MemberDetailsResponse>({
     queryKey: ["member-details", memberId],
     queryFn: async () => {
-      const response = await fetch(`/api/members/${memberId}`);
-      
-      if (!response.ok) {
-        const error = await response.json();
+      const response = await apiClient(`/api/members/${memberId}`);
+
+      if (response.status !== 200) {
+        const error = await response.data;
         throw new Error(error.error || "Failed to fetch member details");
       }
-      
-      return response.json();
+
+      return response.data;
     },
     enabled: !!memberId,
   });

@@ -1,4 +1,5 @@
 // hooks/useAddDocument.ts
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -32,30 +33,22 @@ export const useAddDocument = () => {
         // If we have extracted text on client, include it as well (multipart field)
         if (data.text) formData.append("text", data.text);
 
-        const response = await fetch("/api/documents/upload", {
+        const response = await apiClient("/api/documents/upload", {
           method: "POST",
-          body: formData,
+          data: formData,
         });
 
-        if (!response.ok) {
-          const errorBody = await response.json().catch(() => null);
-          if (errorBody?.error) {
-            throw new Error(errorBody.error || "Something went wrong");
-          }
-        }
-        const result = await response.json();
-        return result.documentId;
+        return response.data.documentId;
       }
 
       // JSON body (no file)
-      const response = await fetch("/api/documents", {
+      const response = await apiClient("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Failed to upload document (json).");
-      const result = await response.json();
+      const result = response.data;
       return result.documentId;
     },
     onSuccess: () => {

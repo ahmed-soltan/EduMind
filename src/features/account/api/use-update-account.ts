@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -12,20 +13,16 @@ export const useUpdateAccount = () => {
 
   return useMutation({
     mutationFn: async (data: UpdateAccountData) => {
-      const res = await fetch("/api/users/me", {
+      const res = await apiClient("/api/users/me", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(data),
+        withCredentials: true,
+        data: JSON.stringify(data),
       });
       
-      if (!res.ok) {
-        throw new Error("Failed to update account");
-      }
-      
-      return res.json();
+      return res
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });

@@ -27,8 +27,6 @@ export const GET = async (req: NextRequest) => {
 
   const tenant = await getTenantBySubdomain(subdomain);
 
-  console.log({ tenant });
-
   if (!tenant) {
     return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
   }

@@ -123,6 +123,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isLoading = isLoadingCanCreateFeature || permissionLoading;
 
   if (isLoading) return null;
+
+  console.log(canCreateFeature)
   
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -140,7 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {canCreateFeature.teams.canCreate && hasPermission && (
+        {canCreateFeature.canCreate && hasPermission && (
           <NavDocuments items={data.members} />
         )}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}

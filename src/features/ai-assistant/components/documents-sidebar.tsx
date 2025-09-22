@@ -34,7 +34,7 @@ export const DocumentsSidebar = () => {
   const { data: hasPermission, isLoading: isLoadingPermission } =
     useHasPermission("document:upload");
 
-  const canCreateDocument = documentLimits?.documents.canCreate;
+  const canCreateDocument = documentLimits?.canCreate;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

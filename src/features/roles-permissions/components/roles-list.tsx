@@ -93,8 +93,6 @@ export const RolesList = () => {
     );
   }
 
-  console.log(roles)
-
   return (
     <>
       <Card>

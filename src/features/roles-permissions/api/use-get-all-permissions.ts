@@ -1,20 +1,20 @@
 import { Permissions } from "@/db/types";
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetAllPermissions = () => {
   return useQuery({
     queryKey: ["permissions"],
     queryFn: async (): Promise<Permissions[]> => {
-      const res = await fetch("/api/permissions", {
-        credentials: "include",
+      const res = await apiClient("/api/permissions", {
+        withCredentials: true,
       });
-      
-      if (!res.ok) {
+
+      if (res.status !== 200) {
         throw new Error("Failed to fetch permissions");
       }
-      
-      const data = await res.json();
-      return data.permissions;
+
+      return res.data.permissions;
     },
   });
 };

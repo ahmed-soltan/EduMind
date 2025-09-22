@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
+import apiClient from "@/lib/api";
 
 export const useCreateAIGeneratedFlashCard = () => {
   const deckId = useDeckId();
@@ -10,20 +11,14 @@ export const useCreateAIGeneratedFlashCard = () => {
   const router = useRouter();
   return useMutation({
     mutationFn: async (data: { numFlashCards: number }) => {
-      const response = await fetch(`/api/decks/${deckId}/flash-cards/ai`, {
+      const response = await apiClient(`/api/decks/${deckId}/flash-cards/ai`, {
         method: "POST",
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        if (errorBody?.error) {
-          throw new Error(errorBody.error || "Something went wrong");
-        }
-      }
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       router.refresh();

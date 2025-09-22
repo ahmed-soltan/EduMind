@@ -65,9 +65,9 @@ export const PlansTab = () => {
       planId: confirmDialog.planId,
       billingCycle,
     });
-    if (newSubscription) {
-      window.location.href = newSubscription.checkoutUrl;
-    }
+    // if (newSubscription) {
+    //   window.location.href = newSubscription.checkoutUrl;
+    // }
     setConfirmDialog({ isOpen: false, planId: "", planName: "", planPrice: 0 });
   };
 

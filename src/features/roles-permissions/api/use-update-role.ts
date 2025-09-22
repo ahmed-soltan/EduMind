@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UpdateRoleData {
@@ -12,21 +13,21 @@ export const useUpdateRole = () => {
 
   return useMutation({
     mutationFn: async ({ roleId, ...data }: UpdateRoleData) => {
-      const res = await fetch(`/api/roles/${roleId}`, {
+      const res = await apiClient(`/api/roles/${roleId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(data),
+        withCredentials: true,
+        data: JSON.stringify(data),
       });
 
-      if (!res.ok) {
-        const error = await res.json();
+      if (res.status !== 200) {
+        const error = await res.data
         throw new Error(error.message || "Failed to update role");
       }
 
-      return res.json();
+      return res.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["roles"] });

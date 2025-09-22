@@ -5,6 +5,7 @@ import { UpdateFlashCardSchema } from "../schemas";
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import apiClient from "@/lib/api";
 
 export const useUpdateFlashCard = (flashCardId: string) => {
   const deckId = useDeckId();
@@ -13,22 +14,18 @@ export const useUpdateFlashCard = (flashCardId: string) => {
 
   return useMutation({
     mutationFn: async (data: z.infer<typeof UpdateFlashCardSchema>) => {
-      const response = await fetch(
+      const response = await apiClient(
         `/api/decks/${deckId}/flash-cards/${flashCardId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          data: JSON.stringify(data),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update flashcard");
-      }
-
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       router.refresh();

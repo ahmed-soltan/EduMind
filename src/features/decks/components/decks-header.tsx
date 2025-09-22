@@ -17,7 +17,9 @@ export const DecksHeader = () => {
     useHasPermission("deck:create");
   const router = useRouter();
 
-  const hasReachedLimit = !data?.decks.canCreate;
+
+  console.log({data})
+  const hasReachedLimit = !data?.canCreate;
 
   return (
     <div className="space-y-4">

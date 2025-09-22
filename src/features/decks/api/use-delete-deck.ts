@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -5,12 +6,9 @@ export const useDeleteDeck = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (deckId: string) => {
-      const response = await fetch(`/api/decks/${deckId}`, {
+      const response = await apiClient(`/api/decks/${deckId}`, {
         method: "DELETE",
       });
-      if (!response.ok) {
-        throw new Error("Failed to delete deck");
-      }
     },
 
     onSuccess: () => {

@@ -15,6 +15,7 @@ import { useAddDocument } from "../api/use-add-document";
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { extractPdfTextFromArrayBuffer } from "@/utils/extract-pdf-text";
+import apiClient from "@/lib/api";
 
 interface AddDocumentFormProps {
   onCancel: () => void;
@@ -81,11 +82,22 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
 
             setValue(meta);
 
-            const resp = await fetch(meta.url);
-            if (!resp.ok) throw new Error("Fetch failed: " + resp.status);
-            const ab = await resp.arrayBuffer();
+            const resp = await apiClient(meta.url, {
+              responseType: "arraybuffer", // tell Axios to give raw binary
+              method: "GET",
+              withCredentials: false, // this is a public URL
+            });
 
+            if (resp.status !== 200) {
+              throw new Error("Fetch failed: " + resp.status);
+            }
+
+            const ab = resp.data as ArrayBuffer; // Axios gives you the raw buffer
+            console.log({resp})
+            console.log({ab})
+            
             const text = await extractPdfTextFromArrayBuffer(ab);
+            console.log({text})
             setExtractedText(text);
           }}
           onUploadError={(error: Error) => {

@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface RoleDetails {
@@ -14,15 +15,15 @@ export const useGetRoleDetails = (roleId: string | null) => {
     queryFn: async (): Promise<RoleDetails> => {
       if (!roleId) throw new Error("Role ID is required");
       
-      const res = await fetch(`/api/roles/${roleId}`, {
-        credentials: "include",
+      const res = await apiClient(`/api/roles/${roleId}`, {
+        withCredentials: true,
       });
-      
-      if (!res.ok) {
+
+      if (res.status !== 200) {
         throw new Error("Failed to fetch role details");
       }
-      
-      return res.json();
+
+      return res.data;
     },
     enabled: !!roleId,
   });

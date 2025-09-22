@@ -46,7 +46,6 @@ export default function AIAssistantLayout({
         </TabsContent>
 
         <TabsContent value="chat">
-          {/* ChatWidget loads only when chat tab is opened */}
           <ChatWidget />
         </TabsContent>
       </Tabs>

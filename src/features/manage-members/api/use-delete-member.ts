@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -6,17 +7,13 @@ export const useDeleteMember = () => {
 
   return useMutation({
     mutationFn: async (memberId: string) => {
-      const res = await fetch(`/api/members/${memberId}`, {
+      const res = await apiClient(`/api/members/${memberId}`, {
         method: "DELETE",
-        credentials: "include",
+        withCredentials: true,
       });
       
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to delete member");
-      }
-      
-      return res.json();
+    
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["members"] });

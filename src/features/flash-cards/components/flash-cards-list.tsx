@@ -30,7 +30,7 @@ export const FlashCardsList = ({ deckId }: FlashCardsListProps) => {
 
   const { filters } = useFilters();
 
-  const hasReachedLimit = !flashCardLimits?.flashcards.canCreate;
+  const hasReachedLimit = !flashCardLimits?.canCreate;
 
   const filteredFlashCards = useMemo(() => {
     if (!data) return [];

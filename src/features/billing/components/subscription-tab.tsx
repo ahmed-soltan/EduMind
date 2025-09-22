@@ -140,12 +140,14 @@ export const SubscriptionTab = () => {
 
             <div className="flex gap-2">
               <Button variant="outline">Change Plan</Button>
-              <Button
-                variant="destructive"
-                onClick={() => setIsConfirming(true)}
-              >
-                Cancel Subscription
-              </Button>
+              {data?.plans.name === "Free" ? null : (
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsConfirming(true)}
+                >
+                  Cancel Subscription
+                </Button>
+              )}
             </div>
           </CardContent>
         )}

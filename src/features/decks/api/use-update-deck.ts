@@ -3,24 +3,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { UpdateDeckSchema } from "../schemas";
 import { toast } from "sonner";
+import apiClient from "@/lib/api";
 
 export const useUpdateDeck = (deckId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: z.infer<typeof UpdateDeckSchema>) => {
-      const response = await fetch(`/api/decks/${deckId}`, {
+      const response = await apiClient(`/api/decks/${deckId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update deck");
-      }
-
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["decks"] });

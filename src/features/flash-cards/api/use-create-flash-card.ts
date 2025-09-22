@@ -1,10 +1,11 @@
 import z from "zod";
+import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
 import { CreateFlashCardSchema } from "../schemas";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import apiClient from "@/lib/api";
 
 export const useCreateFlashCard = () => {
   const deckId = useDeckId();
@@ -13,20 +14,20 @@ export const useCreateFlashCard = () => {
 
   return useMutation({
     mutationFn: async (data: z.infer<typeof CreateFlashCardSchema>) => {
-      const response = await fetch(`/api/decks/${deckId}/flash-cards`, {
+      const response = await apiClient(`/api/decks/${deckId}/flash-cards`, {
         method: "POST",
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
       });
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
+      if (response.status !== 200) {
+        const errorBody = await response.data.error;
         if (errorBody?.error) {
           throw new Error(errorBody.error || "Something went wrong");
         }
       }
-      return response.json();
+      return response.data
     },
     onSuccess: () => {
       router.refresh();

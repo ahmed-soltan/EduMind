@@ -1,3 +1,4 @@
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -20,21 +21,16 @@ export const useUpgradeSubscription = () => {
 
   return useMutation<UpgradeSubscriptionResponse, Error, UpgradeSubscriptionData>({
     mutationFn: async (data: UpgradeSubscriptionData) => {
-      const res = await fetch("/api/subscriptions/upgrade", {
+      const res = await apiClient("/api/subscriptions/upgrade", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
-        body: JSON.stringify(data),
+        withCredentials: true,
+        data: JSON.stringify(data),
       });
       
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to upgrade subscription");
-      }
-      
-      return res.json();
+      return res.data;
     },
     onSuccess: (data) => {
       // Invalidate relevant queries to refresh data

@@ -3,27 +3,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { CreateDeckSchema } from "../schemas";
 import { toast } from "sonner";
+import apiClient from "@/lib/api";
 
 export const useCreateDeck = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: z.infer<typeof CreateDeckSchema>) => {
-      const response = await fetch("/api/decks", {
+      const response = await apiClient("/api/decks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        data: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        if (errorBody?.error) {
-          throw new Error(errorBody.error || "Something went wrong");
-        }
-      }
-
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["decks"] });
@@ -32,6 +26,6 @@ export const useCreateDeck = () => {
     },
     onError: (error: any) => {
       toast.error(error?.message || "Something went wrong");
-    }
+    },
   });
 };

@@ -1,4 +1,5 @@
 import { useDeckId } from "@/features/decks/hooks/use-deck-id";
+import apiClient from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -10,18 +11,14 @@ export const useDeleteFlashCard = () => {
 
   return useMutation({
     mutationFn: async (flashCardId: string) => {
-      const response = await fetch(
+      const response = await apiClient(
         `/api/decks/${deckId}/flash-cards/${flashCardId}`,
         {
           method: "DELETE",
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete flashcard");
-      }
-
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       router.refresh();

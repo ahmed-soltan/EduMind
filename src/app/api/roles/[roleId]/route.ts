@@ -146,28 +146,18 @@ export const PATCH = async (
     if (!role) {
       return NextResponse.json({ error: "Role not found" }, { status: 404 });
     }
+    // assume `redis` is an Upstash Redis instance: import { Redis } from "@upstash/redis"
 
-    const redisKey = `tenant:${tenant.id}:roles`;
-
-    // Find index of role inside the array
-    const roles = (await redis.json.get(redisKey)) as any[];
-    if (roles) {
-      const index = roles.findIndex((r) => r.id === roleId);
-      if (index !== -1) {
-        await redis.json.set(
-          redisKey,
-          `$[${index}].roleName`,
-          role.isDefault ? roles[index].roleName : roleName
-        );
-        await redis.json.set(
-          redisKey,
-          `$[${index}].roleDescription`,
-          description || null
-        );
-      }
-    }
+    console.log({permissions})
 
     await Promise.all([
+      await updateRoleInRedis({
+        tenantId: tenant.id,
+        roleId,
+        roleName,
+        description,
+        permissionsCount: permissions.length, // <- this will set count based on length
+      }),
       // Update role basic information
       await db
         .update(tenantRoles)
@@ -292,3 +282,72 @@ export const DELETE = async (
     );
   }
 };
+
+// PATCH handler (or helper)
+async function updateRoleInRedis({
+  tenantId,
+  roleId,
+  roleName,
+  description,
+  isDefault,
+  // either pass permissions (array) OR permissionsCount (number|string)
+  permissions,
+  permissionsCount,
+}: {
+  tenantId: string;
+  roleId: string;
+  roleName?: string;
+  description?: string | null;
+  isDefault?: boolean;
+  permissions?: unknown[]; // optional array of permissions
+  permissionsCount?: number | string; // optional explicit count
+}) {
+  const redisKey = `tenant:${tenantId}:roles`;
+  const raw: unknown = await redis.get(redisKey);
+
+  // normalize to array safely
+  let roles: any[] = [];
+  if (raw == null) {
+    roles = [];
+  } else if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      roles = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      // corrupt value like "[object Object]" -> log and fallback to empty
+      console.warn("Invalid JSON in redis key, resetting:", redisKey, raw);
+      roles = [];
+    }
+  } else if (Array.isArray(raw)) {
+    roles = raw as any[];
+  } else if (typeof raw === "object") {
+    // some clients may already return parsed objects; ensure it's an array
+    roles = Array.isArray(raw as any) ? (raw as any) : [];
+  } else {
+    roles = [];
+  }
+
+  const index = roles.findIndex((r) => r.id === roleId);
+  if (index === -1) {
+    // not found — optionally throw or return
+    return false;
+  }
+
+  console.log({ permissionsCount });
+
+  // apply updates
+  roles[index] = {
+    ...roles[index],
+    roleName: isDefault
+      ? roles[index].roleName
+      : (roleName ?? roles[index].roleName),
+    roleDescription: description ?? null,
+    permissionsCount,
+  };
+
+  console.log({ role: roles[index] });
+
+  // write back as JSON (always stringify to avoid "[object Object]")
+  await redis.set(redisKey, JSON.stringify(roles), { ex: 60 * 60 });
+  return true;
+}

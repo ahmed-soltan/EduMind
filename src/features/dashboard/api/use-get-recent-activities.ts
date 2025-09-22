@@ -1,18 +1,15 @@
 import { UserActivity } from "@/db/types";
+import apiClient from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetRecentActivities = () => {
   return useQuery<any, Error, UserActivity[]>({
     queryKey: ["recentActivities"],
     queryFn: async () => {
-      const response = await fetch("/api/activities?limit=5", {
+      const response = await apiClient("/api/activities?limit=5", {
         method: "GET",
-        cache: "no-store",
       });
-      if (!response.ok) {
-        throw new Error("Failed to fetch recent activities");
-      }
-      return response.json();
+      return response.data;
     },
   });
 };
