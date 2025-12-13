@@ -162,7 +162,7 @@ export const POST = async (req: NextRequest) => {
   // Build model & prompt (your existing code)
   const model = new ChatGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY!,
-    model: "gemini-2.0-flash",
+    model: "gemini-2.5-flash",
     temperature: 0.7,
   });
 

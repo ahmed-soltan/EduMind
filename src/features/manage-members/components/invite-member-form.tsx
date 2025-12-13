@@ -1,3 +1,11 @@
+import { z } from "zod";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Mail, UserPlus, Loader2 } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -6,22 +14,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Mail, UserPlus, Loader2 } from "lucide-react";
-import { useGetRoles } from "../api/use-get-roles";
-import { useInviteMember } from "../api/use-invite-member";
-import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -29,6 +21,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useGetRoles } from "../api/use-get-roles";
+import { useInviteMember } from "../api/use-invite-member";
 
 const inviteSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -54,7 +56,7 @@ export const InviteMemberForm = ({ onCancel }: InviteMemberFormProps) => {
   });
 
   if (rolesLoading) {
-    return null; // or a loading spinner if you prefer
+    return null;
   }
 
   const onSubmit = async (data: InviteFormData) => {

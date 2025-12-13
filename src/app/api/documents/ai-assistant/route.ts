@@ -14,13 +14,13 @@ import { getTenantMember } from "@/actions/get-tenant-member";
 import { getTenantBySubdomain } from "@/actions/get-tenant-by-subdomain";
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "text-embedding-004",
+  model: "gemini-embedding-001",
   apiKey: process.env.GEMINI_API_KEY!,
 });
 
 const model = new ChatGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY!,
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash",
   temperature: 0.7,
 });
 

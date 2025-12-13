@@ -1,5 +1,5 @@
 import { db } from "@/db/conn";
-import { documents } from "@/db/schema";
+import { chunks, documents } from "@/db/schema";
 import { getUserSession } from "@/utils/get-user-session";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -29,30 +29,39 @@ export const GET = async (
   return NextResponse.json(document);
 };
 
-
 export const DELETE = async (
   req: NextRequest,
   { params }: { params: Promise<{ documentId: string }> }
 ) => {
-  const { documentId } = await params;
+  try {
+    const { documentId } = await params;
 
-  const session = await getUserSession();
+    const session = await getUserSession();
 
-  if (!session.isAuthenticated) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session.isAuthenticated) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const [document] = await db
+      .select()
+      .from(documents)
+      .where(eq(documents.id, documentId))
+      .limit(1);
+
+    if (!document) {
+      return NextResponse.json(
+        { error: "Document not found" },
+        { status: 404 }
+      );
+    }
+    await db.delete(chunks).where(eq(chunks.documentId, documentId));
+    await db.delete(documents).where(eq(documents.id, documentId));
+    return NextResponse.json({ message: "Document deleted successfully" });
+  } catch (error) {
+    console.log({error})
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
-
-  const [document] = await db
-    .select()
-    .from(documents)
-    .where(eq(documents.id, documentId))
-    .limit(1);
-
-  if (!document) {
-    return NextResponse.json({ error: "Document not found" }, { status: 404 });
-  }
-
-  await db.delete(documents).where(eq(documents.id, documentId));
-
-  return NextResponse.json({ message: "Document deleted successfully" });
 };

@@ -287,8 +287,5 @@ export const GET = async (req: NextRequest) => {
     .orderBy(subscriptions.startDate)
     .limit(1);
 
-
-    console.log({subscription})
-
   return NextResponse.json(subscription);
 };

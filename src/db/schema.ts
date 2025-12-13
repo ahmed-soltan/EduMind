@@ -317,7 +317,7 @@ export const chunks = pgTable("chunks", {
     .notNull()
     .references(() => documents.id),
   content: text("content").notNull(),
-  embedding: vector("embedding", { dimensions: 768 }), // matches Gemini embeddings
+  embedding: vector("embedding", { dimensions: 3072 }), // matches Gemini embeddings
 });
 
 export const assistantMessages = pgTable(

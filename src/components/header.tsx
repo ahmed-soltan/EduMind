@@ -1,13 +1,41 @@
 "use client";
-import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { Menu, X } from "lucide-react";
+
 import React from "react";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { Menu, X } from "lucide-react";
+
+import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
-import { LogoutButton } from "@/features/auth/components/logout-button";
-import { LoginButton } from "@/features/auth/components/login-button";
-import { SignupButton } from "@/features/auth/components/signup-button";
-import { GetStartedButton } from "@/features/home/components/get-started-button";
+
+const LoginButton = dynamic(
+  () =>
+    import("@/features/auth/components/login-button").then(
+      (mod) => mod.LoginButton
+    ),
+  { ssr: false }
+);
+const SignupButton = dynamic(
+  () =>
+    import("@/features/auth/components/signup-button").then(
+      (mod) => mod.SignupButton
+    ),
+  { ssr: false }
+);
+const LogoutButton = dynamic(
+  () =>
+    import("@/features/auth/components/logout-button").then(
+      (mod) => mod.LogoutButton
+    ),
+  { ssr: false }
+);
+const GetStartedButton = dynamic(
+  () =>
+    import("@/features/home/components/get-started-button").then(
+      (mod) => mod.GetStartedButton
+    ),
+  { ssr: false }
+);
 
 const menuItems = [
   { name: "Features", href: "/#features" },

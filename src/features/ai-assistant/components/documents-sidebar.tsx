@@ -63,34 +63,23 @@ export const DocumentsSidebar = () => {
             Documents ({documents?.length ?? 0})
           </SheetTitle>
         </SheetHeader>
-        {hasPermission && (
-          <div className="w-full">
-            <Hint
-              label={
-                !canCreateDocument
-                  ? "Upgrade your plan to add more documents"
-                  : "Add a new document"
-              }
-              side="bottom"
-            >
-              <div className={!canCreateDocument ? "cursor-not-allowed" : ""}>
-                <Button
-                  className="w-full"
-                  onClick={
-                    canCreateDocument ? openAddDocumentModal : openBillingModal
-                  }
-                  disabled={!canCreateDocument}
-                >
-                  <Plus className="size-5" />
-                  Add New Document
-                  {!canCreateDocument && (
-                    <Crown className="w-4 h-4 ml-1 text-yellow-500" />
-                  )}
-                </Button>
-              </div>
-            </Hint>
-          </div>
-        )}
+        <div className="w-full">
+          <Hint
+            label={
+              !canCreateDocument
+                ? "Upgrade your plan to add more documents"
+                : "Add a new document"
+            }
+            side="bottom"
+          >
+            <div>
+              <Button className="w-full" onClick={openAddDocumentModal}>
+                <Plus className="size-5" />
+                Add New Document
+              </Button>
+            </div>
+          </Hint>
+        </div>
         <Separator />
         <div className="flex h-full w-full flex-col">
           {isLoading ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { z } from "zod";
 import * as React from "react";
 import {
   closestCenter,
@@ -42,7 +43,6 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

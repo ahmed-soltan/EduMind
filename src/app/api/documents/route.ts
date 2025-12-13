@@ -59,7 +59,7 @@ export const GET = async (req: NextRequest) => {
 };
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "text-embedding-004", // new free embedding model
+  model: "gemini-embedding-001", // new free embedding model
   apiKey: process.env.GEMINI_API_KEY!,
 });
 
@@ -96,15 +96,16 @@ export const POST = async (req: NextRequest) => {
 
   // Check permission to upload documents
   const allowed = await hasPermission(tenantMember.roleId, "document:upload");
+  console.log('Permission to upload document:', allowed);
   if (!allowed) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Check if the user has permission to create documents
   const { canCreate } = await canCreateFeature(
     tenantMember.tenantId,
     "documents"
   );
+  console.log({canCreate})
   if (!canCreate) {
     return NextResponse.json(
       { error: "Document limit reached. Please upgrade your plan." },
