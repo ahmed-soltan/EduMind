@@ -7,10 +7,9 @@ export async function searchChunks(
   queryEmbedding: number[],
   documentId: string,
   k = 5,
-  expectedDim = 768
+  expectedDim = 3072
 ) {
   try {
-    // basic validation
     if (!Array.isArray(queryEmbedding) || queryEmbedding.length === 0) {
       throw new Error("queryEmbedding must be a non-empty array");
     }
@@ -22,8 +21,6 @@ export async function searchChunks(
 
     const docIdTrimmed = String(documentId).trim();
 
-    // Quick existence check using Drizzle table prop (works with uuid typed column)
-    // We'll try both direct equality and text equality (safer if driver/DB type issues exist).
     const sample = await db
       .select({
         id: chunks.id,
@@ -46,14 +43,13 @@ export async function searchChunks(
       );
     }
 
-    // Build safe vector literal as a single SQL fragment
     const safeNums = queryEmbedding.map((n) => {
       if (!Number.isFinite(n)) throw new Error("Embedding contains non-finite value");
       return Number(n).toString();
     });
+    
     const embeddingLiteral = `[${safeNums.join(",")}]`;
 
-    // Run similarity query using a single vector literal; compare on document_id::text for robustness
     let simRes;
     try {
       simRes = await db.execute(
@@ -80,7 +76,6 @@ export async function searchChunks(
       }));
     }
 
-    // similarity returned nothing — fallback to most recent k by created_at (or id if no created_at)
     const fallback = await db.execute(
       sql`
         SELECT id, content, NULL::float AS distance

@@ -123,8 +123,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const isLoading = isLoadingCanCreateFeature || permissionLoading;
 
   if (isLoading) return null;
-
-  console.log(canCreateFeature)
   
   return (
     <Sidebar collapsible="offcanvas" {...props}>

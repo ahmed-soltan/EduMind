@@ -44,8 +44,6 @@ export const LoginForm = () => {
       const result = await mutateAsync(data);
 
       // result should be the server response shape
-      console.log("login result:", result);
-
       const accessToken = result?.accessToken;
       const lastActiveTenantSubdomain = result?.lastActiveTenantSubdomain;
 
@@ -57,14 +55,13 @@ export const LoginForm = () => {
         console.debug("Access token received");
       }
 
-      if (callbackUrl === "/invite") {
+      if (callbackUrl.startsWith("/invite")) {
         router.push(callbackUrl);
       }
 
       // If we have a tenant subdomain we prefer redirecting to it.
       if (lastActiveTenantSubdomain) {
         const target = `${protocol}://${lastActiveTenantSubdomain}.${APP_DOMAIN}/dashboard`;
-        console.log("Redirecting to tenant dashboard:", target);
 
         // Use assign for a full navigation (works cross-subdomain)
         window.location.assign(target);
@@ -72,7 +69,6 @@ export const LoginForm = () => {
       }
 
       // Default: go to callbackUrl
-      console.log("Redirecting to callbackUrl:", callbackUrl);
       router.push(callbackUrl);
     } catch (err: any) {
       // mutateAsync threw — show error (you already show FormBanner via error state)

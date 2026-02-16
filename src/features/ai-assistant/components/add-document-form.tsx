@@ -93,11 +93,9 @@ export const AddDocumentForm = ({ onCancel }: AddDocumentFormProps) => {
             }
 
             const ab = resp.data as ArrayBuffer; // Axios gives you the raw buffer
-            console.log({resp})
-            console.log({ab})
             
             const text = await extractPdfTextFromArrayBuffer(ab);
-            console.log({text})
+
             setExtractedText(text);
           }}
           onUploadError={(error: Error) => {

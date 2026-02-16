@@ -82,7 +82,7 @@ export const InvitationCard = () => {
 
       const data = await response.data;
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         toast.success("Invitation accepted successfully!");
         router.push(
           `${protocol}://${invitation.subdomain}.${APP_DOMAIN}/dashboard`

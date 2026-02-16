@@ -12,6 +12,7 @@ export const POST = async (req: NextRequest) => {
 
   const [user] = await db.select().from(users).where(eq(users.email, email));
   const isMatchPassword = await bcrypt.compare(password, user.password);
+
   if (!user || !isMatchPassword) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }

@@ -32,7 +32,7 @@ export const GET = async (req: NextRequest) => {
   if (!session.isAuthenticated) {
     return NextResponse.json("Unauthorized", { status: 401 });
   }
-  
+
   const subdomain = extractSubdomain(req);
   if (!subdomain) {
     return NextResponse.json({ error: "Subdomain not found" }, { status: 400 });
@@ -48,10 +48,10 @@ export const GET = async (req: NextRequest) => {
   try {
     tenantMember = await getTenantMember(session.user.id, tenant.id);
   } catch (err: any) {
-          return NextResponse.json(
-        { error: "Not a member of tenant" },
-        { status: 403 }
-      );
+    return NextResponse.json(
+      { error: "Not a member of tenant" },
+      { status: 403 }
+    );
   }
 
   // fetch quizzes joined with the current member's attempts (single query)
@@ -118,10 +118,10 @@ export const POST = async (req: NextRequest) => {
   try {
     tenantMember = await getTenantMember(session.user.id, tenant.id);
   } catch (err: any) {
-          return NextResponse.json(
-        { error: "Not a member of tenant" },
-        { status: 403 }
-      );
+    return NextResponse.json(
+      { error: "Not a member of tenant" },
+      { status: 403 }
+    );
   }
 
   // check permission (use DB-backed check)
@@ -166,15 +166,19 @@ export const POST = async (req: NextRequest) => {
     temperature: 0.7,
   });
 
-const quizPrompt = new PromptTemplate({
-  template: `
-You are a quiz generator.
-Use the following custom instruction from the user: "{prompt}".
+  const quizPrompt = new PromptTemplate({
+    template: `
+You are a strict quiz generator. ALL instructions below MUST be followed exactly, and they OVERRIDE any default behavior.
 
-Generate {numQuestions} multiple-choice questions about "{topic}".
-Difficulty: {difficulty}.
+USER MANDATORY INSTRUCTIONS:
+{prompt}
 
-Return the result strictly in valid JSON in the following structure:
+TASK:
+Generate exactly {numQuestions} multiple-choice questions about "{topic}".
+Difficulty level: {difficulty}.
+
+OUTPUT FORMAT:
+Return the result strictly in valid JSON using the structure below. Do not include any extra text, markdown, or comments:
 
 {{
   "title": "string",
@@ -191,14 +195,14 @@ Return the result strictly in valid JSON in the following structure:
   ]
 }}
 
-Important rules:
-- Do NOT return just letters like "A", "B", "C", "D".
-- "answer" must match one of the strings from the "options" array.
-- Ensure valid JSON, without trailing commas.
+STRICT RULES:
+- Do NOT return letters like "A", "B", "C", "D" as the answer.
+- "answer" must exactly match one of the strings in the "options" array.
+- Ensure valid JSON with no trailing commas.
+- Follow the USER MANDATORY INSTRUCTIONS above exactly.
 `,
-  inputVariables: ["topic", "numQuestions", "difficulty", "prompt"],
-});
-
+    inputVariables: ["topic", "numQuestions", "difficulty", "prompt"],
+  });
 
   const formattedPrompt = await quizPrompt.format({
     topic,

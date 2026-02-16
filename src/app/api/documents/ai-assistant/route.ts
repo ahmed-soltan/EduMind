@@ -58,7 +58,6 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Empty message" }, { status: 400 });
   }
 
-  // save user message
   await db.insert(assistantMessages).values({
     id: crypto.randomUUID(),
     documentId,
@@ -68,7 +67,6 @@ export const POST = async (req: NextRequest) => {
     message,
   });
 
-  // fetch the last 5 previous messages for memory
   const history = await db
     .select({
       role: assistantMessages.role,
@@ -79,20 +77,16 @@ export const POST = async (req: NextRequest) => {
     .orderBy(desc(assistantMessages.createdAt))
     .limit(5);
 
-  // reverse so oldest comes first
   const conversationHistory = history.reverse().map((m) => ({
     role: m.role === "user" ? "user" : "assistant",
     content: m.message,
   }));
 
-  // embed the query
   const [queryEmbedding] = await embeddings.embedDocuments([message]);
 
-  // retrieve similar chunks
   const relevantChunks = await searchChunks(queryEmbedding, documentId, 5);
   const context = relevantChunks.map((c: any) => c.content).join("\n\n");
 
-  // prepare prompt
   const promptMessages = [
     {
       role: "system",
@@ -103,15 +97,13 @@ export const POST = async (req: NextRequest) => {
       role: "user",
       content: `Document context:\n${context}`,
     },
-    ...conversationHistory, // memory (last few exchanges)
-    { role: "user", content: message }, // latest user input
+    ...conversationHistory,
+    { role: "user", content: message },
   ];
 
-  // send to Gemini
   const response = await model.invoke(promptMessages);
   const aiMessage = response.content.toString();
 
-  // save assistant message
   await db.insert(assistantMessages).values({
     id: crypto.randomUUID(),
     documentId,

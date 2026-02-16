@@ -59,7 +59,7 @@ export const GET = async (req: NextRequest) => {
 };
 
 const embeddings = new GoogleGenerativeAIEmbeddings({
-  model: "gemini-embedding-001", // new free embedding model
+  model: "gemini-embedding-001",
   apiKey: process.env.GEMINI_API_KEY!,
 });
 
@@ -94,9 +94,8 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check permission to upload documents
   const allowed = await hasPermission(tenantMember.roleId, "document:upload");
-  console.log('Permission to upload document:', allowed);
+
   if (!allowed) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -105,7 +104,7 @@ export const POST = async (req: NextRequest) => {
     tenantMember.tenantId,
     "documents"
   );
-  console.log({canCreate})
+
   if (!canCreate) {
     return NextResponse.json(
       { error: "Document limit reached. Please upgrade your plan." },
@@ -113,7 +112,6 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  // Expect JSON body with extracted text
   const body = await req.json();
   const {
     title = "",
@@ -124,7 +122,6 @@ export const POST = async (req: NextRequest) => {
     text = "",
   } = body;
 
-  // Insert document metadata
   const [newDocument] = await db
     .insert(documents)
     .values({
@@ -146,7 +143,6 @@ export const POST = async (req: NextRequest) => {
 
     const docs = await splitter.splitText(text);
 
-    // 👉 Free embeddings from Google
     const vectors = await embeddings.embedDocuments(docs);
 
     for (let i = 0; i < docs.length; i++) {

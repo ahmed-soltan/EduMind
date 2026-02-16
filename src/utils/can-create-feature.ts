@@ -36,30 +36,23 @@ export async function canCreateFeature(
     with: { plan: true },
   });
 
-  console.log({ subscription });
-
   if (!subscription) {
     return { canCreate: false, usage: 0, limit: 0, available: false };
   }
 
   // load plan limits from redis (or db fallback if you prefer)
   let planLimitsCached = (await redis.get<PlanLimits[]>("plan_limits")) ?? [];
-
-  console.log({planLimitsCached})
   
   if (planLimitsCached.length === 0) {
     const planLimitsData = await db.select().from(planLimits);
-    console.log({planLimitsData});
     planLimitsCached = planLimitsData as PlanLimits[];
     await redis.set("plan_limits", planLimitsCached);
   }
-  console.log({planLimitsCached})
 
   const planLimit = planLimitsCached.find(
     (p) => p.planId === subscription.planId && p.feature === feature
   );
 
-  console.log(planLimit);
 
   // If no planLimit entry => feature not available for this plan
   if (!planLimit) {
@@ -71,7 +64,6 @@ export async function canCreateFeature(
   if (typeof (planLimit as any).available === "boolean") {
     const available = Boolean((planLimit as any).available);
 
-    console.log({ available });
 
     if (!available) {
       return { canCreate: false, usage: null, limit: null, available: false };
@@ -129,7 +121,6 @@ export async function canCreateFeature(
 
   // If the feature has no usage metric (getUsage returns null), treat it as boolean available
   const usage = await getUsage(tenantId, feature);
-  console.log({ usage });
   if (usage === null) {
     // planLimit exists but has numeric limit (we'll use logic that if limit === 0 -> disabled?).
     // Safer default: if limit is number, and usage not applicable, just return available = true

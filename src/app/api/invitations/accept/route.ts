@@ -59,9 +59,9 @@ export const POST = async (req: NextRequest) => {
 
     // Check if the authenticated user's email matches the invitation email
     const [existingUser] = await db
-      .select({ id: users.id, email: users.email })
-      .from(users)
-      .where(eq(users.id, session.user.id));
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.id, session.user.id));
 
     if (!existingUser || existingUser.email !== pendingInvitation.email) {
       return NextResponse.json(
@@ -69,7 +69,7 @@ export const POST = async (req: NextRequest) => {
         { status: 403 }
       );
     }
-
+    
     // Check if user is already a member of the tenant
     const [existingMember] = await db
       .select({ id: tenantMembers.id })
